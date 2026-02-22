@@ -1,0 +1,8 @@
+{
+  "name": "hello-world",
+  "description": "A sample plugin that provides a /hello command to verify marketplace setup",
+  "version": "1.0.0",
+  "author": {
+    "name": "Suntory-N-Water"
+  }
+}
