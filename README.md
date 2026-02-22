@@ -83,21 +83,3 @@ git add .
 git commit -m "Add my-plugin"
 git push
 ```
-
-## 同梱プラグイン
-
-| プラグイン  | 説明                                 | カテゴリ |
-| ----------- | ------------------------------------ | -------- |
-| hello-world | マーケットプレイス動作確認用サンプル | utility  |
-
-## カテゴリ一覧
-
-| カテゴリ     | 用途             |
-| ------------ | ---------------- |
-| development  | 開発支援ツール   |
-| deployment   | デプロイ・CI/CD  |
-| database     | データベース連携 |
-| productivity | 生産性向上       |
-| monitoring   | 監視・ロギング   |
-| security     | セキュリティ     |
-| utility      | ユーティリティ   |

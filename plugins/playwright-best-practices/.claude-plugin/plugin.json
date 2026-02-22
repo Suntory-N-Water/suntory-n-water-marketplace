@@ -1,0 +1,8 @@
+{
+  "name": "playwright-best-practices",
+  "description": "Playwright自動化のベストプラクティス。要素操作、待機戦略、ナビゲーションパターン、ロケータ使用法をカバー",
+  "version": "1.0.0",
+  "author": {
+    "name": "Suntory-N-Water"
+  }
+}

@@ -7,14 +7,44 @@
   },
   "plugins": [
     {
-      "name": "hello-world",
-      "description": "A sample plugin that provides a /hello command to verify marketplace setup",
+      "name": "playwright-best-practices",
+      "description": "Playwright自動化のベストプラクティス。要素操作、待機戦略、ナビゲーションパターン、ロケータ使用法をカバー",
       "version": "1.0.0",
       "author": {
         "name": "Suntory-N-Water"
       },
-      "source": "./plugins/hello-world",
-      "category": "utility"
+      "source": "./plugins/playwright-best-practices",
+      "category": "development"
+    },
+    {
+      "name": "building-astro5-blogs",
+      "description": "Astro 5.x静的ブログ構築のベストプラクティス。Islands Architecture、Content Layer API、画像最適化、SEOなど",
+      "version": "1.0.0",
+      "author": {
+        "name": "Suntory-N-Water"
+      },
+      "source": "./plugins/building-astro5-blogs",
+      "category": "development"
+    },
+    {
+      "name": "gh-aw-best-practice",
+      "description": "GitHub Agentic Workflowsの作成・運用ベストプラクティス。フロントマター仕様、セキュリティ、デザインパターン",
+      "version": "1.0.0",
+      "author": {
+        "name": "Suntory-N-Water"
+      },
+      "source": "./plugins/gh-aw-best-practice",
+      "category": "development"
+    },
+    {
+      "name": "managing-git-github-workflow",
+      "description": "Git操作とGitHub CLIによるワークフロー管理。コミット、ブランチ、PR、Issue管理のテンプレート付き",
+      "version": "1.0.0",
+      "author": {
+        "name": "Suntory-N-Water"
+      },
+      "source": "./plugins/managing-git-github-workflow",
+      "category": "development"
     }
   ]
 }

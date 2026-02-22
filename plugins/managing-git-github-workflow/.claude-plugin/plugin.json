@@ -1,0 +1,8 @@
+{
+  "name": "managing-git-github-workflow",
+  "description": "Git操作とGitHub CLIによるワークフロー管理。コミット、ブランチ、PR、Issue管理のテンプレート付き",
+  "version": "1.0.0",
+  "author": {
+    "name": "Suntory-N-Water"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "building-astro5-blogs",
+  "description": "Astro 5.x静的ブログ構築のベストプラクティス。Islands Architecture、Content Layer API、画像最適化、SEOなど",
+  "version": "1.0.0",
+  "author": {
+    "name": "Suntory-N-Water"
+  }
+}
