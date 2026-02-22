@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "claude-code-marketplace",
+  "name": "suntory-n-water-marketplace",
   "description": "Personal Claude Code plugin marketplace for custom plugins and tools",
   "owner": {
     "name": "Suntory-N-Water"

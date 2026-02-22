@@ -7,31 +7,24 @@
 ### 1. GitHub にリポジトリを作成・push
 
 ```bash
-cd claude-code-marketplace
+cd suntory-n-water-marketplace
 git init
 git add .
 git commit -m "Initial marketplace setup"
-gh repo create claude-code-marketplace --public --source=. --push
+gh repo create suntory-n-water-marketplace --public --source=. --push
 ```
 
 ### 2. マーケットプレイスを登録
 
-`~/.claude/plugins/known_marketplaces.json` に以下を追加:
+Claude Code 内で以下を実行:
 
-```json
-{
-  "claude-code-marketplace": {
-    "source": {
-      "source": "github",
-      "repo": "Suntory-N-Water/claude-code-marketplace"
-    }
-  }
-}
+```
+/plugin marketplace add Suntory-N-Water/suntory-n-water-marketplace
 ```
 
 ### 3. プラグインをインストール
 
-Claude Code を再起動して `/plugin` コマンドを実行し、カスタムマーケットプレイスからプラグインをインストール。
+`/plugin` コマンドからカスタムマーケットプレイスのプラグインをインストール。
 
 ## プラグインの追加方法
 
