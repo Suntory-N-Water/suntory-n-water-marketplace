@@ -66,6 +66,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bun run --silent -i ~/.claude/scripts/typescript/multi-command-check.ts -c check:fix"
+          },
+          {
+            "type": "command",
             "command": "bun run --silent -i ~/.claude/scripts/typescript/web-fetch-advice.ts"
           }
         ]

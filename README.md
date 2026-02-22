@@ -83,3 +83,24 @@ git add .
 git commit -m "Add my-plugin"
 git push
 ```
+
+## バージョン管理
+
+プラグインのバージョンを semver 形式でバンプするスクリプトを用意している。
+
+```bash
+bun run version-bump <plugin-name> <major|minor|patch>
+```
+
+### 例
+
+```bash
+# パッチ: 1.0.0 -> 1.0.1
+bun run version-bump playwright-best-practices patch
+
+# マイナー: 1.0.0 -> 1.1.0
+bun run version-bump building-astro5-blogs minor
+
+# メジャー: 1.0.0 -> 2.0.0
+bun run version-bump gh-aw-best-practice major
+```
