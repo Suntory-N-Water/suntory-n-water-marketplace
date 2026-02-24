@@ -74,6 +74,40 @@ on:
   status-comment: true                  # 開始/完了コメント
 ```
 
+### skip-if-match (条件付きスキップ)
+
+> Ref: https://github.github.io/gh-aw/reference/triggers/#skip-if-match-condition-skip-if-match
+
+GitHub検索クエリにマッチがあれば **エージェント実行前に** ワークフロー全体をスキップする。重複PR・Issue防止に有効。
+
+```yaml
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  skip-if-match: 'is:pr is:open label:ci-doctor'  # オープンPRがあればスキップ
+```
+
+オブジェクト形式で閾値を指定可能:
+
+```yaml
+on: weekly on monday
+  skip-if-match:
+    query: "is:pr is:open label:urgent"
+    max: 3  # 3件以上マッチでスキップ (デフォルト: 1)
+```
+
+### skip-if-no-match (逆条件スキップ)
+
+> Ref: https://github.github.io/gh-aw/reference/triggers/#skip-if-no-match-condition-skip-if-no-match
+
+マッチが **ない** 場合にスキップ。`skip-if-match` と組み合わせ可能。
+
+```yaml
+on: weekly on monday
+  skip-if-no-match: 'is:pr is:open label:ready-to-deploy'
+```
+
 ### workflow_dispatch (手動実行)
 
 ```yaml
@@ -202,7 +236,12 @@ tools:
   web-fetch: null                        # Webフェッチ
   web-search: null                       # Web検索
   playwright: null                       # ブラウザ自動化
-  cache-memory: true                     # ラン間のキャッシュ
+  cache-memory: true                     # ラン間のキャッシュ (/tmp/gh-aw/cache-memory/)
+  # cache-memory 詳細形式:
+  # cache-memory:
+  #   key: custom-key-${{ github.workflow }}
+  #   retention-days: 30
+  #   allowed-extensions: [".json", ".txt", ".md"]
   serena: null                           # コードインテリジェンス
   agentic-workflows: true                # AW分析ツール
 ```

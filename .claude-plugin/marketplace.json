@@ -29,7 +29,7 @@
     {
       "name": "gh-aw-best-practice",
       "description": "GitHub Agentic Workflowsの作成・運用ベストプラクティス。フロントマター仕様、セキュリティ、デザインパターン",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Suntory-N-Water"
       },

@@ -101,6 +101,35 @@ network:
 - PRは自動マージされない。人間が常にレビュー・承認
 - ワークフローのMarkdownをコードとして扱い、変更をレビュー
 
+### 冪等性・重複防止
+
+繰り返しトリガーされるワークフロー (schedule, workflow_run 等) では、同じ出力を重複作成しない設計が必須。
+
+**`safe-outputs.max: 1` だけでは不十分。** `max` は1回の実行あたりの制限であり、複数回実行されれば複数作られる。
+
+推奨: フロントマターレベルのガード + プロンプト指示の多層防御
+
+```yaml
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  # 第1層: エージェント実行前にスキップ (確実)
+  skip-if-match: 'is:pr is:open label:my-label'
+
+tools:
+  # 第2層: ラン間でキャッシュを保持 (AIが参照)
+  cache-memory: true
+
+safe-outputs:
+  create-pull-request:
+    # 第3層: 1実行あたりの上限
+    max: 1
+    labels: [my-label]  # skip-if-match のクエリと一致させる
+```
+
+**重要:** `create-pull-request` の `labels` と `skip-if-match` の検索クエリを一致させること。PR作成時に付与されるラベルが次回の `skip-if-match` で検出される。
+
 ### コスト管理
 
 - Copilot: 1実行あたり1-2プレミアムリクエスト

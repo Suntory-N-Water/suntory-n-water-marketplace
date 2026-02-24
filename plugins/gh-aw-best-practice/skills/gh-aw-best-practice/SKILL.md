@@ -1,6 +1,6 @@
 ---
 name: gh-aw-best-practice
-description: GitHub Agentic Workflows (GH-AW) のワークフロー作成・運用ベストプラクティス
+description: GitHub Agentic Workflows (.github/workflows/*.md) のワークフロー定義を正確かつ安全に作成・修正・トラブルシューティングする。フロントマター構文、権限設計、デザインパターン、セキュリティのガイダンスを提供する。GH-AW ワークフローの新規作成・修正、フロントマター構文の確認、権限やセキュリティの設計、エラー対応を求められたときに使用する。
 metadata:
   target_agent: claude
 ---
@@ -20,6 +20,7 @@ GitHub Agentic Workflows (.github/workflows/*.md) を正確かつ安全に作成
 3. **パターン選択に迷う** → `reference/03-design-patterns.md` でパターン一覧を確認
 4. **セキュリティ・権限の設計** → `reference/04-security-best-practices.md` を参照
 5. **エラー・トラブル** → `reference/04-security-best-practices.md` のトラブルシューティングセクション
+6. **重複防止・冪等性** → `reference/04-security-best-practices.md` の「冪等性・重複防止」+ `reference/01-frontmatter-spec.md` の `skip-if-match`
 
 ---
 
