@@ -18,13 +18,27 @@ gh repo create suntory-n-water-marketplace --public --source=. --push
 
 Claude Code 内で以下を実行:
 
-```
+```bash
 /plugin marketplace add Suntory-N-Water/suntory-n-water-marketplace
 ```
 
 ### 3. プラグインをインストール
 
-`/plugin` コマンドからカスタムマーケットプレイスのプラグインをインストール。
+Claude Code 内で `/plugin install` を実行:
+
+```bash
+# Playwright ベストプラクティス
+/plugin install playwright-best-practices@suntory-n-water-marketplace
+
+# Astro 5.x ブログ構築
+/plugin install building-astro5-blogs@suntory-n-water-marketplace
+
+# GitHub Agentic Workflows
+/plugin install gh-aw-best-practice@suntory-n-water-marketplace
+
+# Git/GitHub ワークフロー管理
+/plugin install managing-git-github-workflow@suntory-n-water-marketplace
+```
 
 ## プラグインの追加方法
 
