@@ -39,7 +39,7 @@
     {
       "name": "general-dev-skills",
       "description": "開発全般で使える汎用スキル集。Git/GitHubワークフロー管理など開発作業全般をカバー",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": {
         "name": "Suntory-N-Water"
       },
