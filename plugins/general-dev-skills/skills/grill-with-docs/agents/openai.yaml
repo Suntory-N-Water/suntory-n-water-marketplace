@@ -1,0 +1,5 @@
+interface:
+  display_name: "文書化しながら詰める"
+  short_description: "設計を詰めて ADR と用語集を書く"
+policy:
+  allow_implicit_invocation: false
