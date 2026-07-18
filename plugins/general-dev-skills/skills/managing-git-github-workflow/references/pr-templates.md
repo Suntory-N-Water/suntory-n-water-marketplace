@@ -16,7 +16,6 @@ gh pr create --title "feat: 機能名" --body "$(cat <<'EOF'
 - [ ] ローカルでの動作確認
 - [ ] テストの追加・更新
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
@@ -43,7 +42,6 @@ gh pr create --title "fix: バグの概要" --body "$(cat <<'EOF'
 - [ ] 修正後の動作確認
 - [ ] 関連機能の動作確認
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
@@ -66,7 +64,6 @@ gh pr create --title "refactor: リファクタリング内容" --body "$(cat <<
 ## 備考
 その他の注意事項
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
@@ -82,7 +79,6 @@ gh pr create --title "docs: ドキュメント更新内容" --body "$(cat <<'EOF
 ## 理由
 ドキュメント更新の理由
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
