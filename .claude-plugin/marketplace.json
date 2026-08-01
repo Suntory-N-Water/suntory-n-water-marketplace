@@ -1,5 +1,5 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
   "name": "suntory-n-water-marketplace",
   "description": "Personal Claude Code plugin marketplace for custom plugins and tools",
   "owner": {
@@ -17,26 +17,6 @@
       "category": "development"
     },
     {
-      "name": "building-astro5-blogs",
-      "description": "Astro 5.x静的ブログ構築のベストプラクティス。Islands Architecture、Content Layer API、画像最適化、SEOなど",
-      "version": "1.0.0",
-      "author": {
-        "name": "Suntory-N-Water"
-      },
-      "source": "./plugins/building-astro5-blogs",
-      "category": "development"
-    },
-    {
-      "name": "gh-aw-best-practice",
-      "description": "GitHub Agentic Workflowsの作成・運用ベストプラクティス。フロントマター仕様、セキュリティ、デザインパターン",
-      "version": "1.0.1",
-      "author": {
-        "name": "Suntory-N-Water"
-      },
-      "source": "./plugins/gh-aw-best-practice",
-      "category": "development"
-    },
-    {
       "name": "general-dev-skills",
       "description": "開発全般で使える汎用スキル集。Git/GitHubワークフロー管理など開発作業全般をカバー",
       "version": "1.4.1",
@@ -45,6 +25,16 @@
       },
       "source": "./plugins/general-dev-skills",
       "category": "development"
+    },
+    {
+      "name": "blog-writing-skills",
+      "description": "ブログ・技術記事の執筆スキル集。テーマ探索と構成設計、初稿執筆、推敲、日本語技術文書規範、認知リズム設計をカバー",
+      "version": "1.0.0",
+      "author": {
+        "name": "Suntory-N-Water"
+      },
+      "source": "./plugins/blog-writing-skills",
+      "category": "productivity"
     }
   ]
 }

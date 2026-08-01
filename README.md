@@ -24,20 +24,11 @@ Claude Code 内で以下を実行:
 
 ### 3. プラグインをインストール
 
-Claude Code 内で `/plugin install` を実行:
+Claude Code 内で `/plugin install` を実行(例: ブログ・技術記事の執筆プラグイン):
 
 ```bash
-# Playwright ベストプラクティス
-/plugin install playwright-best-practices@suntory-n-water-marketplace
-
-# Astro 5.x ブログ構築
-/plugin install building-astro5-blogs@suntory-n-water-marketplace
-
-# GitHub Agentic Workflows
-/plugin install gh-aw-best-practice@suntory-n-water-marketplace
-
-# Git/GitHub ワークフロー管理
-/plugin install managing-git-github-workflow@suntory-n-water-marketplace
+# ブログ・技術記事の執筆
+/plugin install blog-writing-skills@suntory-n-water-marketplace
 ```
 
 ## プラグインの追加方法
