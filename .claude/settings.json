@@ -27,12 +27,7 @@
       "Bash(curl:*)",
       "Bash(wget:*)"
     ],
-    "deny": [
-      "Bash(rm -rf:*)",
-      "Bash(sudo:*)",
-      "Read(.env)",
-      "Read(.dev.vars)"
-    ]
+    "deny": ["Bash(rm -rf:*)", "Bash(sudo:*)", "Read(.env)", "Read(.dev.vars)"]
   },
   "hooks": {
     "Stop": [
