@@ -52,7 +52,7 @@ function printUsage(): void {
   console.log('');
   console.log('Examples:');
   console.log('  bun run src/version-bump.ts playwright-best-practices patch');
-  console.log('  bun run src/version-bump.ts building-astro5-blogs minor');
+  console.log('  bun run src/version-bump.ts blog-writing-skills minor');
 }
 
 async function main(): Promise<void> {

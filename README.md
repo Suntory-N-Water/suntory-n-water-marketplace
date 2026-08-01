@@ -104,8 +104,8 @@ bun run version-bump <plugin-name> <major|minor|patch>
 bun run version-bump playwright-best-practices patch
 
 # マイナー: 1.0.0 -> 1.1.0
-bun run version-bump building-astro5-blogs minor
+bun run version-bump blog-writing-skills minor
 
 # メジャー: 1.0.0 -> 2.0.0
-bun run version-bump gh-aw-best-practice major
+bun run version-bump general-dev-skills major
 ```
