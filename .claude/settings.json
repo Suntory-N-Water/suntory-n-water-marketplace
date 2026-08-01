@@ -3,7 +3,6 @@
     "allow": [
       "Read",
       "Edit",
-      "Write",
       "Grep",
       "Glob",
       "Bash(mkdir:*)",
@@ -32,21 +31,7 @@
       "Bash(rm -rf:*)",
       "Bash(sudo:*)",
       "Read(.env)",
-      "Read(.dev.vars)",
-      "Write(.env*)",
-      "Bash(wget:*)",
-      "NotebookEdit",
-      "NotebookRead"
-    ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git checkout:*)",
-      "Bash(git switch:*)",
-      "Bash(bun add:*)",
-      "Bash(bun remove:*)",
-      "Bash(rm:*)"
+      "Read(.dev.vars)"
     ]
   },
   "hooks": {
