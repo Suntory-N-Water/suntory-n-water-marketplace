@@ -1,7 +1,7 @@
 {
   "name": "blog-writing-skills",
   "description": "ブログ・技術記事の執筆スキル集。テーマ探索と構成設計、初稿執筆、推敲、日本語技術文書規範、認知リズム設計をカバー",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Suntory-N-Water"
   }
