@@ -1,0 +1,4 @@
+interface:
+  display_name: "日本語スタイルルール登録"
+  short_description: "日本語の指摘を検査ルールとテストへその場で反映する"
+  default_prompt: "$style-rule-add を使って、日本語表現への指摘を検査ルールとテストに登録する。"
