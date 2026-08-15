@@ -1,0 +1,18 @@
+{
+  "name": "general-dev-skills",
+  "version": "1.5.0",
+  "description": "開発全般で使える汎用スキル集。コーディング規約、デバッグ手順、リファクタリング指針、コードレビュー観点、テスト戦略をカバー",
+  "author": {
+    "name": "Suntory-N-Water"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "General Dev Skills",
+    "shortDescription": "開発全般で使える汎用スキル集",
+    "longDescription": "コーディング規約、デバッグ、リファクタリング、コードレビュー、テスト設計を支援します。",
+    "developerName": "Suntory-N-Water",
+    "category": "Development",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": ["このコードに適用すべき開発プラクティスを教えて"]
+  }
+}

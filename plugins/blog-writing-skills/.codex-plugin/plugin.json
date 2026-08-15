@@ -1,0 +1,18 @@
+{
+  "name": "blog-writing-skills",
+  "version": "1.2.0",
+  "description": "ブログ・技術記事の執筆スキル集。ネタの選別、テーマの思考深化と構成設計、初稿執筆、推敲、日本語技術文書規範、認知リズム設計をカバー",
+  "author": {
+    "name": "Suntory-N-Water"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Blog Writing Skills",
+    "shortDescription": "ブログ・技術記事の執筆スキル集",
+    "longDescription": "ネタの選別、思考深化、構成設計、初稿執筆、推敲を一貫して支援します。",
+    "developerName": "Suntory-N-Water",
+    "category": "Writing",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": ["この技術記事をわたしっぽい文体で執筆・推敲して"]
+  }
+}

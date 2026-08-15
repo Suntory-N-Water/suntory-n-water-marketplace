@@ -90,13 +90,20 @@ async function main(): Promise<void> {
 
   await Bun.write(file, `${JSON.stringify(marketplace, null, 2)}\n`);
 
-  const pluginJsonPath = `${ROOT_DIR}${plugin.source.replace(/^\.\//, '')}/.claude-plugin/plugin.json`;
-  const pluginJsonFile = Bun.file(pluginJsonPath);
+  const pluginRoot = `${ROOT_DIR}${plugin.source.replace(/^\.\//, '')}`;
+  for (const manifestDirectory of ['.claude-plugin', '.codex-plugin']) {
+    const pluginJsonFile = Bun.file(
+      `${pluginRoot}/${manifestDirectory}/plugin.json`,
+    );
 
-  if (await pluginJsonFile.exists()) {
-    const pluginJson: { version: string } = await pluginJsonFile.json();
-    pluginJson.version = newVersion;
-    await Bun.write(pluginJsonFile, `${JSON.stringify(pluginJson, null, 2)}\n`);
+    if (await pluginJsonFile.exists()) {
+      const pluginJson: { version: string } = await pluginJsonFile.json();
+      pluginJson.version = newVersion;
+      await Bun.write(
+        pluginJsonFile,
+        `${JSON.stringify(pluginJson, null, 2)}\n`,
+      );
+    }
   }
 
   console.log(`${plugin.name}: v${oldVersion} -> v${newVersion}`);
