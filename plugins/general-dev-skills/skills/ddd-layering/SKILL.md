@@ -1,343 +1,361 @@
 ---
 name: ddd-layering
-description: TypeScript の関数主体 DDD プロジェクトで、domain / usecase / infrastructure / entry point の層配置・モデリング判断を支援する。新規実装(「どの層に置くか」「port を切るべきか」「DTO はどこに置くか」)と既存コードレビュー(「配置が正しいか」「DDD 視点で見て」「直すべき箇所」)の両方が対象。DDD 語彙(集約 / リポジトリ / 値オブジェクト / エンティティ / ドメインサービス / ファクトリ / 仕様パターン)の登場、または domain/ usecase/ infrastructure/ レイアウトの編集で起動。非 DDD プロジェクトでは起動しない。
+description: TypeScript の関数主体プロジェクトで、DDD の業務モデルと application/usecase・infrastructure・entry point の責務、依存方向、port/DI の要否を設計・レビューする。domain、usecase(s)、infrastructure、業務ルールを含む route・queue・cron・workflow、aggregate、repository、value object、entity、domain service、port、DI、レイヤー分離の話が出たら積極的に使う。既存コードのDDDレビュー、過剰抽象化の削減、必要な抽象化の追加、DTOやテスト境界の判断にも使う。DDDを理由にinterfaceやusecaseを機械的に増やさず、最小限のルールで再現可能な設計を選ぶ。業務判断のない単純な型修正・設定変更・CRUD/readや、一般的なDI解説だけには使わない。
 ---
 
-# Functional DDD 層分類スキル
+# 選択的な Functional DDD 層設計
 
-Functional DDD を採用するプロジェクトで層配置・モデリング判断を行うときに Claude が参照する内部手順書。
-成果物は「層分類のドキュメント」ではなく**コード**である。判断を素早く下し、ユーザと議論しながら実装に進む。
+このスキルの目的は、DDDらしい名前のファイルを増やすことではない。業務上の判断を技術から守り、変更理由の異なる処理を分離しながら、読みにくい儀式的な抽象化を避けることである。
 
-> **実装スタイル**: 関数宣言と純粋関数を既定とする(TypeScript で自然な書き方)。エンティティの状態遷移や複雑な不変条件の管理など、関数構成だと可読性が明確に落ちる箇所に限ってクラスを使ってよい。クラスを使う場合も、本 skill の層分類・集約境界・port の判断はそのまま適用する。
+ここでいうFunctional DDDは正式な固有流派ではなく、DDDの業務モデルを型と純粋関数中心で実装する方針を指す。DDD、Hexagonal Architecture、port/adapter、DIは別の概念であり、必ず同時に導入するものではない。
 
----
+- DDD: 業務の用語、モデル、不変条件、判断を設計する考え方
+- Hexagonal Architecture: 内側のコードと外側の技術の依存方向を設計する考え方
+- port / adapter: 内側が必要とする能力の契約と、その技術実装
+- DI: 具体的な依存をcomposition rootで組み立て、関数やオブジェクトへ渡す方法
 
-## 目次
+## 0. 最初に行うこと
 
-- [0. ワークフロー全体](#0-ワークフロー全体)
-- [1. 前提整理](#1-前提整理)
-- [2. 層の責務](#2-層の責務)
-- [3. 判定フロー](#3-判定フロー)
-- [4. モデリング判断](#4-モデリング判断)
-- [5. 横断的な判断軸](#5-横断的な判断軸)
-- [6. アンチパターン照合](#6-アンチパターン照合)
-- [7. 最小例](#7-最小例)
+このスキルは単独で読んでも判断できるように定義している。起動したら次の順に現在のコードと要求から判断する。
 
----
+1. プロジェクトのREADME、AGENTS.md/CLAUDE.md、ADR、ディレクトリ構成、既存テストを読む。既存の命名・配置規約があればそれを優先する。
+2. 対象処理の入力、出力、業務上の判断、外部依存、整合性・再試行・冪等性を短く整理する。
+3. 依頼が実装かレビューかを判定する。単なる説明・診断ではファイルを変更しない。
+4. DDDの導入自体が目的でなく、単純なCRUDや読み取り処理であれば、DDDの層を無理に増やさない。
 
-## 0. ワークフロー全体
+業務ルールと進行管理の境界が、コードと要求から決められず結果を大きく左右する場合だけ、確認質問を一つに絞る。それ以外は合理的な前提を明示して進める。
 
-このスキルには **実装モード** と **レビューモード** の 2 つの入口がある。最初にどちらかを判定し、対応するワークフローに入る。
+### 用語
 
-### モード判定
+- application / usecase: applicationは層、usecaseはその層に属する一つの利用目的を完了させる手順と外部能力の調整
+- port: 内側が必要とする、技術名を含まない能力の契約。inbound portとoutbound portがある
+- adapter: portまたはruntimeの契約を、DB/API/SDKなどへ接続する実装
+- composition root: 具体的なadapterを生成し、依存を組み立てる場所。entry pointと同じファイルにあってもよい
+- aggregate root: 集約の外部操作を受ける代表オブジェクト
+- repository: 集約の保存・復元を表す契約。読み取り用queryを自動的にRepositoryとは呼ばない
+- read model: 読み取り用途に最適化した投影。集約そのものとは限らない
+- durable workflow: 中断・再開・再試行をruntimeが保持する処理基盤
+- Replay: durable workflowが過去のstepを再現すること
+- retry: 失敗した操作を再実行すること。業務上の再試行とruntimeの再試行は分けて考える
+- 冪等性: 同じ処理を複数回実行しても結果を壊さない性質
+- snapshot: ある時点のdomain状態を表す値。保存用DTOと同一とは限らない
+- collaborator: usecaseやdomain関数へ渡す、役割のある関数またはport。interfaceである必要はない
+- test double: テスト時に依存を置き換える実装。fakeは動作を持つ代替実装、mockは呼び出し記録を主目的とする
+- raw外部データ: provider responseや保存形式など、内部の業務型へ変換する前の技術依存データ
 
-ユーザ発話に次のレビュー系語彙が含まれる場合 → **レビューモード**。
-- 「レビュー」「監査」「診断」「評価」「見て」「これでいいか」「なぜここにある」「配置が正しいか」「直すべき箇所」「DDD 的にどうか」
+## 1. 層の役割と依存方向
 
-これらが無く、新規コードの追加・変更を求めている場合 → **実装モード**。
+層は「ファイルの種類」ではなく、変更理由と責務で決める。図では「call」は実行時の呼び出し、「depends on」はソースコード上の依存、「wiring」は具体実装の組み立てを表す。
 
-どちらか判別がつかない場合のみ、1 問だけ確認する(例: 「既存コードのレビューと、新しい実装の支援、どちらでしょうか?」)。
+```text
+call:       entry point → application/usecase → domain
+depends on: application/usecase → outbound port ← infrastructure adapter
+wiring:     composition root → application/usecase + concrete adapter
 
----
+```
 
-### 実装モード
+### domain
 
-**ショートカット条件**: 次のすべてに該当する軽微変更はこのワークフローを skip し、直接実装してよい。
-- 既存ファイルの位置を変えない
-- 新規型・新規 port・新規 usecase 関数を作らない
-- 既存ロジックの意味を変えない(rename / typo fix / 既存バグの修正 / フォーマット整え)
+入力形式や保存先が変わっても残る、業務上の判断を置く。
 
-逆に次のいずれかが絡む場合は必ずフル実行する。
-- 新しい型・新しい port・新しい usecase 関数の追加
-- 既存コードのレイヤ間移動
-- 既存集約への新しい不変条件の追加
+- 値オブジェクト、エンティティ、集約、状態遷移、不変条件、分類、優先順位、重複判定
+- 外部I/O、DB、HTTP、SDK、ログ基盤を直接呼ばない
+- 既定は純粋な関数と型。クラスは状態遷移や複雑な不変条件を明確にする場合だけ使う
+- domain port は置いてよいが、domainがその意味を所有し、境界として役立つ場合に限る
 
-1. **前提を聞く** (§1) — 業務上の不変条件・ポリシーは **domain と usecase の分け方が割れうるときに限り** AskUserQuestion で 1 問確認する。コード・会話履歴で一意に読めるなら聞かない。入力 / 出力 / 技術依存はコード・会話履歴から読み取れるならスキップ可。前提が曖昧なまま層を断定しない。
-2. **層を決める** (§2, §3) — 判定フローを順に当てて domain / usecase / infrastructure / entry point のどれかに落とす。
-3. **モデリング判断** (§4) — 値オブジェクト vs エンティティ、集約境界、ファクトリ、リポジトリ、ドメインサービス、仕様パターンを決める。
-4. **横断軸の確認** (§5) — DTO 配置、port の要否、helper の要否、readonly。
-5. **アンチパターン照合** (§6) — 結論が表のどれかに該当しないかを最後にチェックする。
-6. **配置案を提示して合意を取る** — 次の 4 行フォーマットで提示する。ユーザが OK と言うまでコードに進まない。長文ドキュメント化はしない。
+### application / usecase
 
-   ```
-   [配置案]
-   - domain: <型・関数を列挙>
-   - usecase: <ユースケース関数・受け取る port を列挙>
-   - infrastructure: <port 実装・シリアライザ・リードモデルを列挙>
-   - 残課題: <聞き残し・判断保留・要確認を 1 〜 2 件。なければ「なし」>
-   ```
+一つの利用目的を達成するための進行管理を置く。
 
-7. **実装する** — 合意済みの配置案に沿ってコードを書く。
+- port を呼ぶ順序、複数の外部資源の調整、retry、transaction、冪等性、部分失敗の扱い
+- domain の判断を呼び出し、外部結果を次の処理へ渡す
+- ユースケース固有の入力・出力DTOを持ってよい
+- 技術的な純粋関数を呼んでもよい。純粋関数をすべてportに変換する必要はない
+- 具体的なadapterは生成せず、composition rootからportまたはcollaboratorとして受け取る。
+  - application portはprovider responseやDB rowを返さず、adapterで内部型または意味のある結果へ変換する
 
----
+applicationがtransactionの境界やretryの方針を決めても、transactionやSDK retryの仕組みはadapter/runtimeが実装する。applicationのretryは業務プロセスが再試行する方針、runtimeのretryはstep実行の技術方針である。両方を使う場合は、回数と重複制御をどちらが所有するかを明記し、二重retryを避ける。
 
-### レビューモード
+### infrastructure / adapter
 
-既存コードを読んで層分類の崩れを指摘し、修正提案を出す。**勝手に修正を実装しない**。指摘 → 合意 → 修正の順で進める。非 DDD コード(レイヤ分離がない/曖昧)に対しても「DDD 化する/しない」の上位判断は問わず、「DDD 化する前提で、この関数はどの層が妥当か」という層分類提案のみを出す。
+技術や外部契約に依存する実装を置く。
 
-**スコープ判定**: レビュー対象の広さで適用範囲を変える。
-- **局所レビュー**(±1 ファイル・±1 関数): §2 層責務 / §3 判定フロー / §6 アンチパターン のみ適用する。§4 モデリング判断・§5 横断軸 は skip してよい(局所では集約境界や port 設計の全体像が見えないため、踏み込むと推測になる)。
-- **広範囲レビュー**(複数ファイル・モジュール全体): §2 〜 §6 をフル適用する。
+- DB、外部API、SDK、Queue、メール、AI provider、ファイル、暗号、外部形式のparser/serializer
+- application/domain が所有するportの実装
+- DBスキーマに依存するread modelや、外部契約から内部型への変換
 
-1. **コードを読む** — 対象ファイルを読み、現状の層分類を把握する。AskUserQuestion は通常**使わない**(既存コードが第一の情報源)。例外: 「これは domain にあるが実は usecase 相当ではないか」のような**方針転換を提案するとき**だけ、業務ルールを 1 問確認する。
-2. **層責務・判定フローを当てる** (§2, §3) — 既存コードの各要素が判定フローに照らして妥当な層にあるかを点検する。
-3. **モデリング・横断軸を点検** (§4, §5) — 広範囲レビューのときのみ。集約境界・port 配置・DTO 配置・helper の要否・貧血症の有無を見る。
-4. **アンチパターン照合** (§6) — 表に該当する兆候があるか網羅的にチェックする。
-5. **レビュー結果を提示** — 次のフォーマットで全体サマリ+層別に出す。
+### entry point と composition root
 
-   ```
-   [レビュー結果]
-   - 全体講評: <1 行で総評。「概ね OK」「port 配置に課題」など>
-   - domain: <現状の評価 + 問題があれば指摘 + 修正案。問題なければ「OK」>
-   - usecase: <同上>
-   - infrastructure: <同上>
-   - 残課題: <聞き残し・要確認。なければ「なし」>
-   ```
+実行環境とアプリケーションを接続する。
 
-6. **ユーザに修正方針を確認** — 「どの指摘を直すか」をユーザに選ばせる。全件・優先のみ・指摘で終わり、いずれもユーザ判断。
-7. **合意した修正のみ実装** — 合意件について実装モード step 6(配置案提示)以降に合流して進める。
+- HTTP、Queue、Cron、tool protocol、CLI、Workflow のpayload・env・ack/retry・response
+- 認証、入力検証、HTTP/Queue用DTOの小さな変換、結果のシリアライズ、具体実装の組み立て
+- 単純な読み取りendpointがread model adapterを直接呼ぶことは許容する
+- route固有のhelperを別routeへ流用しない。複数箇所で同じ意味を持つ一般的なhelperは、共通モジュールへ移して共有してよい
 
----
+entry pointはruntimeの入力と出力を扱い、composition rootは具体的な依存を組み立てる。小規模な処理では同じファイルに置いてよいが、概念上は別の責務である。
 
-## 1. 前提整理
+Workflowは通常の薄いentry pointとは別扱いにする。durableな `step.do` の名前、runtimeによる再試行・中断・再開、永続化、実行単位が重要な責務であり、step内でportや意味のあるapplication関数を直接呼んでよい。
 
-層分類は前提によって結論が変わる。実装に入る前に、最低この 4 つは言語化する。会話履歴に既出のものは聞き直さない。
+## 2. 層を決める判定手順
 
-| 項目 | 具体例 |
-|------|--------|
-| 入力 | CLI 引数 / HTTP request / queue message / Markdown / JSON / DB record / 外部 API response |
-| 出力 | UI response / 通知 / 保存 JSON / DB record / 生成ファイル / 外部 API request |
-| 業務上の不変条件・ポリシー | 分類 / 重複判定 / 状態遷移 / 優先順位 / 権限制御 / 公開可否。**その業務に詳しい人が説明できる判断** |
-| 差し替え候補となる技術依存 | 保存先 / 外部 API / ファイル形式 / SDK / AI provider / ログ基盤 |
+### Step 1: 業務判断か、技術処理か
 
-**業務上の不変条件・ポリシーは、domain と usecase の分け方が割れうるときに限り AskUserQuestion で 1 問確認する**。コード・会話履歴で一意に読めるなら聞かない。誤ると domain と usecase の区分け自体が破綻するため、判断が割れうるときだけ確実に確認する。他の 3 項目(入力 / 出力 / 技術依存)はコード・会話履歴から十分読み取れるならスキップしてよい。読み取れず判断を左右するときだけ追加で聞く。1 ターンの質問は最大 2 件までにまとめ、質問攻めにしない。
+「その業務に詳しい人が、技術名なしで説明できる判断」ならdomain候補である。次のようなものが該当する。
 
----
+- 状態遷移、公開可否、重複判定、分類、優先順位、業務上の失敗回数による停止
+- 複数の候補から正データを選ぶ、特定のソースを優先する
 
-## 2. 層の責務
+単なる順序制御、batch分割、待機時間、runtimeのretry、transaction、外部エラー処理はapplication候補である。
+snake_case変換、JSON整形、provider応答のparse、DB行への変換はadapter候補である。ただし「3回失敗したら業務上停止する」はdomain、「一時的なAPIエラーを3回再試行する」はapplication/runtimeの実行ポリシーである。同じ数値でも意味で分ける。
 
-| 層 | ディレクトリ | 役割 | 副作用 | port |
-|----|-------------|------|--------|------|
-| domain | `domain/` | 業務上の不変条件・分類・状態遷移を表現する型と純粋関数。port (interface) の宣言を置くことが**できる** | 不可 | 宣言のみ |
-| usecase | `usecase/` | ユースケースの進行管理。port 呼び出し順、retry、トランザクション境界 | port 経由でのみ | 引数で受ける |
-| infrastructure | `infrastructure/` | 外部形式・技術基盤・副作用。port 実装、シリアライザ、リードモデル | あり | 実装 |
-| entry point | `routes/`, `cli/`, `queue/` 等 | 実行環境との接続のみ。argv / env / request / response / exit code / wiring | 実行環境固有 | 組み立てる |
+### Step 2: 変更理由を分ける
 
----
+次の問いをそれぞれ別に答える。
 
-## 3. 判定フロー
+- 業務ルールが変わるときだけ変更されるか
+- provider、DB、SDK、外部フォーマットが変わるときだけ変更されるか
+- HTTP/Queue/Workflowの実行環境が変わるときだけ変更されるか
+- retry、transaction、冪等性、Replayの要件が変わるときだけ変更されるか
 
-### Q1. 副作用を持つか?(`await fetch`, `fs`, `db`, SDK 呼び出し、`Date.now()`、ランダム生成等)
+同じ理由で変わる処理は近くに置き、異なる理由で変わる処理の間に境界を作る。層名だけを理由に分割しない。
 
-- **持つ** → infrastructure(port 実装)または entry point。Q4 へ。
-- **持たない** → Q2 へ。
+### Step 3: port/DI の必要性を判定する
 
-### Q2. 業務ルールか、進行管理か?
+次の観点を順に確認し、具体的な変更理由と境界の名前を一文で説明できる場合に、意味のあるportまたは注入可能な依存を作る。
+少なくとも「技術依存の隔離」「実装交換」「retry・transaction・冪等性などの実行境界」「依存方向の保護」のいずれかを、現実の変更リスクとして説明できることが条件である。
 
-「その業務に詳しい人が言葉で説明できる判断」(分類、重複判定、状態遷移、優先順位、公開可否)か、「どの port をどの順で呼ぶか・retry・トランザクション境界」か。
+1. DB、外部API、Queue、メール、AI、ファイルなどの外部境界を隠す
+2. providerや保存先を交換する、または複数実装を扱う
+3. retry、transaction、冪等性、durable stepなどの境界を明示する
+4. application/domainの依存方向を守る
+5. 外部境界をテストで実装差し替えする価値がある。これは上記の実益を確かめる材料であり、「mockしたい」だけでは理由にしない
 
-- **業務ルール** → Q3 へ(domain 候補)。
-- **進行管理** → usecase。
+一メソッドのportも、`BuildTrigger`、`Notifier`、`BackupStore` のように意味のある能力を表すなら妥当である。禁止するのは一メソッドであることではなく、意味のない汎用抽象化である。
 
-### Q3. 入力形式 / 保存形式を変えても残る判断か?
+次の場合は原則として直接の関数呼び出しにする。
 
-例: 入力が CLI から HTTP に変わっても、保存先が JSON から DB に変わっても、その判断は残るか?
+- 一度しか使わない単純なmapやformat処理
+- 純粋な関数をmockすることだけが目的
+- 一つの関数を呼ぶだけで、変換・ポリシー・エラー処理・境界を追加しないwrapper
+- `execute`、`run`、`handle` のように業務上の意味を表さないinterface
 
-- **残る** → domain。
-- **形式に依存する**(snake_case ↔ camelCase 変換、JSON schema 整形、provider 応答パース) → infrastructure のシリアライザ。
+純粋なparserやconverterを注入することは常に誤りではない。usecaseからprovider固有モジュールを隔離する、テストを高速に保つ、実装差し替えが現実にある、という理由があれば許容する。その場合は「port」と大げさに呼ばず、関数型または技術的collaboratorとして表現する方が読みやすいことがある。
 
-補足: Markdown / CSV / 帳票のように技術形式に見えても、**利用者が業務上その形式を概念として扱う**なら domain に含まれうる。判定テスト: **その業務に詳しい人が業務会話で形式名(Markdown / CSV / 帳票 など)を使うか**。使うなら domain 候補、使わない(JSON / DB / snake_case のように技術都合の語)なら infrastructure。
+位置引数では依存の役割が読みにくい場合は、次のような名前付き依存オブジェクトを使う。依存数を機械的な閾値にしない。ただしservice locatorや汎用DI containerは導入しない。
 
-### Q4. infrastructure か entry point か?
+```ts
+execute({ repository, notifier }, input)
+```
 
-- 外部 API / DB / filesystem / AI provider / queue / mail / 検索基盤への副作用、または domain 型 ↔ 外部契約の変換 → **infrastructure**。
-- argv / env / request / response / exit code / port の組み立て(wiring)/ 表示ログのみ → **entry point**。
-- entry point に業務ルールや「フィールド名変換」が混ざっていたら infrastructure に移す。
+### Step 4: portの宣言場所を決める
 
----
+portの場所は、引数にどの型が含まれるかだけで決めない。次の優先順位で決める。
 
-## 4. モデリング判断
+1. その契約の意味を誰が所有するか
+2. どの変更理由を隔離するか
+3. どの利用者が必要な操作だけを見ればよいか
 
-### 値オブジェクト vs エンティティ
+原則として、outbound portはそれを必要とするapplication側が所有する。domain portにするのは、domainの用語として契約自体が意味を持ち、domainの判断がその抽象に依存する場合である。引数にdomain型が含まれるかだけでは決めない。
 
-判定軸は **同一性 vs 等価性 / ライフサイクル**。
+目安は次のとおりである。
 
-- 値オブジェクト: 同じフィールド値を持つ 2 つは同一とみなす。不変。変更時は新しい値を返す。
-- エンティティ: ID で同一性を判定する。生成・更新・削除のライフサイクルを持つ。更新時もスプレッドで新オブジェクトを返す。
+- 集約のライフサイクルを保存・復元するRepositoryは、domainのモデルとして扱う規約があるならdomain、特定のusecaseだけが必要とするならapplicationに置く
+- usecase固有のraw外部データ、検索、AI、通知、失敗報告、Workflow起動はapplication portになりやすい
+- domainが呼び出さない外部通知portを、引数にdomain型があるという理由だけでdomainへ置かない
+- 一つのportに異なる変更理由の操作を詰め込まない。テーブル単位ではなく、能力・整合性・変更理由で分ける
 
-境界事例(同じ概念でも文脈で扱いが変わる)では「業務上ライフサイクル・履歴・連続性を持たせる必要があるか」を問う。
+### Step 5: read sideを別に考える
 
-不変性は `readonly` だけでは保証されない:
-- 配列要素 → `ReadonlyArray<T>`
-- ネスト → 再帰的に `Readonly`
-- 同じ参照を複数の集約が共有 → 生成時にコピー
+一覧、集計、公開用projection、tool protocol経由の検索などは、集約を復元して変更する処理とは別物である。
 
-### 集約境界
+- 複数テーブルを読むread model/query adapterをinfrastructureに置いてよい
+- 単純なread endpointに、集約RepositoryとUsecaseを一枚ずつ足さない
+- read modelをportにするのは、複数の利用者、provider交換、複雑なポリシー、独立したテスト境界がある場合に限る
+- 認可、利用者ごとのfilter、複数read modelの組み合わせ、業務上のpagination/sort、再利用可能なapplication処理があるならquery usecaseを検討する
 
-**変更の単位** = 集約。1 トランザクションで一緒に変更すべき範囲を 1 つの集約にする。
+### Step 6: Workflowの境界を確認する
 
-- 外部からの操作は集約ルート経由のみ。境界内オブジェクトを直接公開しない。
-- 他の集約は **ID で参照**(直接参照を持たない)。
-- 1 つのユースケースで変更する集約は原則 1 つ。複数集約をまたぐなら結果整合性を検討する。
+durable workflow runtime（例: Cloudflare Workflow）では、次をWorkflow側に残す。
+
+- step名、再試行回数、step間のデータ、Replayの決定性
+- 大きな処理の分割、外部副作用の再実行単位
+- runtime retry、pause/resume、step間データはWorkflowが持ち、業務上の順序・業務エラー・複数portの調整はapplicationが持つ
+- runtime retryで外部副作用が再実行されるなら、portまたはadapter側で冪等性キー・重複排除・安全な再実行を設計する
+
+Workflowを「すべてusecase関数からしか呼べない」と制限しない。`step.do(() => port.call())` が意味のある境界なら、それ自体が設計である。
+
+## 3. モデリングの最小ルール
+
+### 値オブジェクト・エンティティ・集約
+
+- 値オブジェクト: 等価性で扱い、生成時に検証できる不変の値
+- エンティティ: 同一性を持ち、状態が変化しても同じものとして追跡するもの。履歴は必須ではない
+- 集約: ひとまとまりの不変条件を守る整合性境界。Aggregate rootが外部操作を受ける
+- transaction: その整合性を守るために採用する実装手段。Aggregateそのものと同義ではない
+
+「一つのusecaseは一つの集約だけ」「一つのDBテーブルは一つのRepository」とは決めない。複数資源を更新する処理は、transactionで一緒に守るのか、結果整合性で許容するのかを明示すればよい。
 
 ### ファクトリ
 
-**作る条件**(いずれか):
-- 採番が伴う
-- 複数フィールドの検証が必要
-- 複数オブジェクトの組み立てが必要
-- 生成失敗のハンドリングが必要
+ID採番、複数フィールドの検証、初期不変条件、複数オブジェクトの組み立てがある場合にdomain factoryを使う。単なるobject literalのwrapperは作らない。
 
-**作らない**: フィールドをそのまま詰めるだけ → インライン。
+### Domain service
 
-配置は **domain**。生成知識は業務ルールの一部。usecase / infrastructure に散らさない。
+一つの型に自然に置けない、複数のdomainオブジェクトを横断する純粋な判断に限る。Repositoryや外部APIを呼ぶ処理はdomain serviceではなくapplicationへ置く。
 
-### リポジトリ
+### 時刻・乱数
 
-**集約単位で 1 つ**。
+`Date.now()` やUUID生成はI/Oとは別の「非決定性」である。業務判断、Workflow Replay、再現性のあるテストに影響する場合だけClock/IdGeneratorを注入する。非決定性が業務上意味を持たないのに、機械的にportを増やさない。
 
-- 命名はドメインの言葉:`saveAnalysis`, `findChangelogByKey`, `loadNotificationState`。`executeSql`, `readJsonFile` のような技術語彙を usecase に公開しない。
-- domain policy(重複判定、状態遷移、分類)を repository 実装に押し込まない。
-- 集約をまたぐ複雑なクエリ(集計・一覧)は集約 repository に押し込まず、**リードモデル**として infrastructure に書いてよい。ただし**書き込みは必ず集約 repository 経由**。
-- **port の宣言位置**: **「集約型(エンティティ)を直接引数・返り値に取るか」だけで決める**。命名規則は流派依存のため、判定軸ではなく従。
-  - **domain に置く**: 集約型を直接やり取りする境界。「集約の永続化・通知という業務概念そのもの」が domain の語彙に属するため。例: `save(channel: Channel)`, `notify(channel: Channel)`。
-  - **usecase に置く**: 集約型を取らず、raw な外部データ(API response / 保存 JSON / 検索結果など)を取る境界。これは usecase の入出力データフローであり、業務概念ではなく「外部とのやり取り」の表現。例: `fetch(): RawChangelog`, `save(analysisJson: AnalysisJson)`。
-  - **命名規則(本プロジェクト例)**: 集約直結は `~Repository` / `~Notifier`、raw データ系は `~SourcePort` / `~StorePort` / `~SearchPort`。**他プロジェクトでは既存規約に揃える**(全部 `~Repository` でまとめる流派、`~Port` で統一する流派など)。命名は本質ではない。
+## 4. DTO・変換・共有契約
 
-### ドメインサービス(最後の手段)
+DTOの場所は「誰との契約か」で決める。
 
-**先に**値オブジェクトかエンティティ相当の型(その型を引数に取る関数)にふるまいを持たせられないか検討する。
-それでも単一の型に持たせると不自然な、複数オブジェクトを横断する業務ルールに限って独立した純粋関数として切り出す。
+| DTO/変換 | 置き場所 |
+|---|---|
+| HTTP/Queueの入力をapplication入力へ変換する小さな処理 | entry point |
+| 複雑・再利用・provider固有のserializer | infrastructure |
+| usecaseの入力・出力 | application/usecase |
+| 業務上の不変条件を持つsnapshot | domain |
+| 複数アプリが読む公開契約 | shared/contract package |
+| provider response、DB row、保存JSONの内部形式 | infrastructure |
 
-**ガード**: ドメインサービスを作る前に、「なぜ X 型に持たせると不自然か」を 1 文で言語化すること。例: 「`isDuplicateWithin24h` は新規 `Article` 1 件と既存 `Article[]` 2 種類のコレクションを比較するため、どちらの型にメソッドとして持たせても主従が逆転して不自然」。1 文で説明できないなら、それは型に持たせるべき。この一手間でドメインモデル貧血症を物理的に防ぐ。
+entry pointの小さなsnake_case変換や値オブジェクト生成を、規則だけでinfrastructureへ追い出さない。大きさ、再利用性、契約の独立性、provider依存の有無で判断する。
 
-既定は状態を持たない純粋関数として実装する(複雑な不変条件管理でクラスのほうが明確なら可)。いずれの形でも **repository を呼ばない**(domain は副作用を持たない)。
+## 5. テストを設計判断に使う
 
-複数オブジェクト横断の業務ルール(重複判定など)は、usecase が repository でデータを揃えて domain 関数に**引数として渡す**パターンで実現する。domain 関数自身が repository を呼ぶ形にしない。
+テストは層を決める理由ではなく、守るべき振る舞いと境界を発見する材料である。
 
-ドメインサービスの濫用はドメインモデル貧血症を招く。
+- domain: 不変条件・状態遷移・分類の高速な純粋関数テスト
+- application: 意味のあるportだけfakeにし、結果、順序、失敗時の扱いを検証
+- DB/Queue/HTTP/Workflow/read model: 実際の境界を使う統合テスト
+- 外部形式parser/serializer: 入力形式の境界を直接テスト
 
-### 仕様パターン
+次の兆候は、portまたはwrapperが過剰である可能性が高い。
 
-評価基準を満たすかを判定する関数として切り出す。
+- テストが「このmethodを呼んだ」しか確認していない
+- 実装を少し変えるだけでmock設定が大量に壊れる
+- 本来純粋な変換のためにfakeクラスを作っている
 
-- 用途: 複数フィールドの組み合わせ判定など、メソッドに埋もれさせず**ドメインの語彙で**切り出したいとき。
-- 単純な述語(`isActive` 等)は型を引数に取る関数で十分。
-- 仕様パターンは**複数条件を組み合わせる必要が出てきたとき**に初めて導入する。
+逆に、統合テストがあることは抽象化不足の証拠ではない。DBのunique制約・transaction、Queueのack/retry、Workflowの再試行とReplay、外部APIの契約変換、read modelのschema/paginationを守るなら統合テストは適切である。
 
----
+## 6. アンチパターン照合表
 
-## 5. 横断的な判断軸
+| 兆候 | 問題 | 推奨する考え方 |
+|---|---|---|
+| 外部依存だから必ずport | interfaceが量産される | 交換・隠蔽・依存方向・再試行のどれが必要か説明する |
+| `await`、Date、乱数があるからport | I/Oと非決定性を混同する | 業務判断やReplayへの影響で決める |
+| 純粋関数だから全部domain | provider DTOや技術形式がdomainへ入る | 業務判断か、外部形式変換かを見る |
+| 純粋converterを必ず直接import | applicationが具体adapterへ依存する | 関数注入・collaborator注入で依存方向を守る選択肢を残す |
+| 一つのportに全機能を集約 | 利用者が不要な操作に依存する | 能力と変更理由で分ける |
+| 集約型を引数に取るportは必ずdomain | portの意味の所有者を誤る | 引数型ではなく契約の所有者で決める |
+| すべてのHTTP処理をUsecase経由にする | 単純なread/CRUDが儀式化する | read modelや単純adapterの直接利用を許可する |
+| entry pointは配線だけ | 認証・DTO変換・response処理まで散らばる | runtime adapterの責務をentry pointに残す |
+| field mappingは必ずinfrastructure | HTTP契約の理解が分散する | 小さな境界変換はentry point、複雑・再利用ならadapterへ |
+| 一つのusecaseは一つの集約だけ | 実際の業務プロセスを不自然に分割する | transactionか結果整合性かを明示する |
+| DBテーブルごとにRepository | schemaがdomainを支配する | aggregate/store/read modelの境界で決める |
+| Workflowの各呼び出しをwrapperで包む | durable stepの境界が読めなくなる | `step.do`内の直接呼び出しを許可する |
+| 一回呼ぶだけのwrapper | 関数名だけが増え、意味が増えない | 変換・判断・エラー処理・境界がなければinlineする |
+| 汎用DI container/service locator | 依存関係が隠れる | 明示的な依存オブジェクトを渡す |
+| mockテストを増やすためにportを作る | テストが実装詳細に固定される | 結果・境界・失敗時の振る舞いをテストする |
+| domain型をデータ保持専用にする | 判断がusecaseへ漏れる | まず値オブジェクト・状態遷移・純粋なdomain関数を検討する |
 
-### DTO の置き場所
+## 7. 実装・レビューの進め方
 
-「**誰との契約か**」で決める。
+### レビューモード
 
-| DTO の種類 | 置き場所 | 理由 |
-|-----------|---------|------|
-| 他アプリも読む保存 JSON 契約 | shared / contract package | 公開契約 |
-| そのアプリ内部だけの外部 API response | infrastructure | provider 応答形式に依存 |
-| ユースケースの入力・出力 | usecase | ユースケース境界の入れ物。業務ルールではない |
-| domain snapshot | domain | 不変条件・状態遷移の対象 |
+既存コードを勝手に変更せず、次の形式で報告する。
 
-shared package には**他プロジェクトが読むことを約束した契約だけ**を置く。内部 provider 応答 schema を出さない。
-
-### port の作成条件
-
-```
-usecase → port (interface) ← infrastructure の実装
-```
-
-- domain は port すら呼ばない(純粋関数として引数を受け取り値を返す)。port を呼ぶのは **usecase だけ**。
-- 新設の理由が次のいずれかで説明できなければ作らない:
-  1. テストで差し替えたい
-  2. 外部 provider を usecase から隠したい
-  3. 副作用境界を usecase から遠ざけたい
-- 適切な対象: 外部 API / DB / filesystem / AI provider / queue / mail / 検索基盤。
-- **作らない**: 純粋な形式変換、業務ルール、単なる map 処理。**薄い interface は禁止**。
-
-### helper の追加条件
-
-層分類の文脈で helper を追加すべきか迷う典型ケースに対する判断軸。一般的な helper 規約はプロジェクトの CLAUDE.md に従う。
-
-| ケース | 判断 |
-|--------|------|
-| domain 関数内で値オブジェクトの変換が 1 箇所だけ | インライン。値オブジェクト型のメソッド/関数に持たせるか、call site で展開 |
-| usecase 内の port 呼び出しの前後処理 | 原則インライン。**名前が責務を説明できる**(`buildDeduplicationKey` など)なら usecase ファイル内の private 関数で関数化可 |
-| infrastructure のシリアライザ(JSON ↔ domain 型) | 関数化。**「シリアライザは名前が責務を説明する」例外**にあたるため、単一 call site でも分離する |
-| 同じ domain ルールが 2 つの usecase から呼ばれる | domain 関数として切り出す(これは helper というより domain の純粋関数の追加) |
-
-新規追加した場合は call site 数を確認し、1 箇所だけならインライン化できない理由を 1 文で言語化する。
-
-### readonly の使い分け
-
-層ではなく **mutation 意図** で判断する。
-
-付ける: domain の値オブジェクト / snapshot、usecase input / output DTO、外部 JSON 契約 DTO、port の input / result 型。
-
-付けない: ローカル accumulator、一時的に組み立てる mutable object。
-
----
-
-## 6. アンチパターン照合
-
-最後にこの表で結論を点検する。1 行でも当てはまるなら設計を見直す。
-
-| 兆候 | 何が壊れるか | 直し方 |
-|------|------------|-------|
-| 純粋関数だから domain と即断 | DTO / provider 応答まで domain に混入 | 「入力形式に依存しないか」「誰との契約か」を再確認 |
-| 外部依存だから port と即断 | 薄い interface が量産される | 「差し替え / 隠蔽 / 依存制御」のいずれかで説明できるか |
-| domain 型がデータ保持専用 | ドメインモデル貧血症 | まず値オブジェクト・エンティティ相当の型にふるまいを持たせる |
-| usecase で `if (count >= 3)` のような業務ルール分岐 | domain ルールの漏れ | domain 関数に委譲 |
-| entry point で `obj.fieldA` → `field_a` 変換 | infrastructure の仕事が漏れる | infrastructure のシリアライザに移す |
-| repository 実装の中で重複判定 | domain policy が repository に混入 | domain 関数に出して usecase から呼ぶ |
-| shared package に provider 応答 schema | 公開範囲ミス | 内部 schema は infrastructure に閉じ込める |
-| `port.executeSql(sql)` | 技術語彙が usecase に漏れる | `port.saveAnalysis(analysis)` のようにドメインの言葉に置き換え |
-| 集約型を引数・返り値に取る port が usecase 側に宣言されている | 集約の永続化という業務概念が domain の外に流出し、domain 境界が見えなくなる | 集約型を扱う port は domain へ移す |
-| 集約型を取らない(raw 外部データを扱う)port が domain 側に宣言されている | domain が外部形式に汚染され、入出力形式が変わると domain が引きずられる | usecase 入出力境界は usecase へ移す |
-| domain で `await fetch(...)` | domain が副作用を持つ | port を usecase 経由で呼ぶ |
-| 1 ユースケースで複数集約を同一トランザクションで保存 | ロック競合、整合性破綻 | 集約境界を見直す、または結果整合性へ |
-| ドメインサービスを早期に量産 | ロジックが点在し貧血症を招く | まず型にふるまいを持たせる |
-
----
-
-## 7. 最小例
-
-業務: 「ユーザが記事を投稿する。同タイトルが過去 24 時間以内にあれば拒否」。入力は HTTP、保存は DB。
-
-- **domain**
-  - `Article`(エンティティ。ID と作成日時を持つ)
-  - `ArticleTitle`(値オブジェクト。長さ検証を持つ)
-  - `isDuplicateWithin24h(newTitle, recentArticles): boolean` — 横断ルール。**repository を呼ばない**。`recentArticles` は引数で受ける
-  - `ArticleRepository` port を**宣言**(集約直結の repository を domain に置く方針の場合)
-- **usecase**
-  - `postArticle(input, deps)`:
-    1. `deps.articleRepo.findRecent(24h)` で履歴を取得
-    2. `isDuplicateWithin24h` を呼ぶ
-    3. 拒否なら `Result.error('duplicate')` を返す
-    4. `Article` を組み立て `deps.articleRepo.save(article)`
-- **infrastructure**
-  - `ArticleRepository` の DB 実装
-  - HTTP request body ↔ usecase input DTO のシリアライザ
-- **entry point** (`routes/articles.ts`)
-  - HTTP body をパースし usecase を呼び、結果を HTTP response に変換するだけ
-
-`if (duplicate)` を usecase で書くのは OK(分岐はユースケース進行管理)。**判定そのもの**(`isDuplicateWithin24h`)は domain にある点に注意。
-
-### レビュー出力例
-
-同じ業務に対して、次のような既存実装が提出されたケース(問題込み)を広範囲レビューしたときの出力イメージ。
-
-想定の既存実装:
-- `domain/article.ts` に `Article` 型と `isDuplicate(repo: ArticleRepository, title): Promise<boolean>` がある(domain が repository を呼んでいる)
-- `usecase/postArticle.ts` で `if (recentArticles.filter(a => a.title === input.title && now - a.createdAt < 24h).length > 0)` をインラインで書いている(domain ルールが usecase に漏れている)
-- HTTP body の `created_at` → `createdAt` 変換が entry point の route ハンドラ内で行われている
-
-```
+```text
 [レビュー結果]
-- 全体講評: 重複判定ルールが domain / usecase / route に散在している。domain と副作用境界の整理が要る。
-- domain: `isDuplicate` が `ArticleRepository` を引数に取って自ら呼び出しており、domain が副作用を持っている。→ 引数を `(newTitle, recentArticles)` に変え、repository 呼び出しは usecase に移す。
-- usecase: 24h 重複判定が `filter` でインライン展開されている。これは domain ルールなので domain 関数(`isDuplicateWithin24h`)に切り出して usecase からは呼ぶだけにする。
-- infrastructure: HTTP body のフィールド名変換が route ハンドラに混入。infrastructure のシリアライザに移す。
-- 残課題: 24h の閾値が business で固定なのか設定値なのか要確認。
+- 全体講評: <設計の要約と最大の論点>
+- 維持: <現在のまま妥当な抽象化と理由>
+- 簡素化: <削除・inline・直接呼び出しの候補>
+- 抽象化/移動: <port、関数、adapter、domain ruleの追加・移動候補>
+- テスト: <既存テストが守っている契約と不足する観点>
+- 優先順位: <今すぐ / 次回変更時 / 保留>
+- 確信度: <高 / 中 / 低。未確認の前提があれば明記>
 ```
+
+各指摘には、対象ファイル、観測事実、壊れるもの、最小の修正案、確信度を添える。「DDD的に悪い」だけで終わらせず、可読性、変更容易性、テスト価値、障害時の挙動で説明する。広範囲レビューでは、維持すべき設計も必ず示す。
+
+### 実装モード
+
+変更を求められた場合は、必要な範囲だけ実装する。まず次の配置案を短く提示し、要求が設計相談だけならコードを書かない。
+
+```text
+## [配置案]
+- domain: <業務ルール・型>
+- application/usecase: <進行管理・port・DTO>
+- infrastructure: <外部実装・serializer・read model>
+- entry point: <入力検証・変換・組み立て・出力>
+- 残課題: <要確認事項。なければ「なし」>
+```
+
+実装後は、変更に対応する純粋関数テストまたは統合テストを追加・更新し、型検査と既存の関連テストを実行する。失敗した場合は、失敗したテスト、原因の仮説、未検証の範囲を報告する。テスト追加だけを目的に新しい層やportを作らない。
+
+## 8. 最小例
+
+「ユーザーが通知先を登録する。既存の有効な宛先は拒否し、無効化理由がsystemなら再有効化する」という処理を、配置が分かる最小の概念コードで示す。実際のHTTP DTOや暗号化などは省略している。
+
+```ts
+type ChannelStatus = 'active' | 'system-deactivated' | 'user-deactivated';
+type Channel = {
+  address: string;
+  frequency: string;
+  status: ChannelStatus;
+};
+type SubscribeInput = { address: string; frequency: string };
+type SubscribeResult =
+  | { ok: true; channel: Channel }
+  | { ok: false; error: 'already_registered' | 'invalid_notification_destination' };
+
+// application-owned outbound ports (implementations belong to infrastructure)
+type ChannelRepository = {
+  findByAddress(address: string): Promise<Channel | null>;
+  save(channel: Channel): Promise<void>;
+};
+type ChannelNotifier = {
+  sendTestNotification(channel: Channel): Promise<{ ok: boolean }>;
+};
+
+// domain: pure decisions and state construction
+const isActive = (channel: Channel) => channel.status === 'active';
+const createChannel = (input: SubscribeInput): Channel => ({
+  ...input,
+  status: 'active',
+});
+const reactivate = (channel: Channel): Channel => ({
+  ...channel,
+  status: 'active',
+});
+
+// application: ordering, external calls, and persistence
+async function subscribe(
+  { channels, notifier }: { channels: ChannelRepository; notifier: ChannelNotifier },
+  input: SubscribeInput,
+): Promise<SubscribeResult> {
+  const existing = await channels.findByAddress(input.address);
+  if (
+    existing !== null &&
+    (isActive(existing) || existing.status === 'user-deactivated')
+  ) {
+    return { ok: false, error: 'already_registered' };
+  }
+
+  const channel = existing === null
+    ? createChannel(input)
+    : reactivate(existing); // ここに来るのはsystem-deactivatedだけ
+  const test = await notifier.sendTestNotification(channel);
+  if (!test.ok) return { ok: false, error: 'invalid_notification_destination' };
+
+  await channels.save(channel);
+  return { ok: true, channel };
+}
+```
+
+この例では、DBと通知は差し替え可能な意味のある境界なのでportを使う。
+一方、HTTPのsnake_case変換、単純なread query、UUID生成のために別のUsecaseやinterfaceを追加する必要はない。
+entry pointは`SubscribeResult`をHTTP応答へ変換する。実装時は、宛先のunique制約による競合、通知後の保存失敗、runtime retryによる通知重複をtransactionまたは冪等性キーで明示する。
+業務ルールが複雑になったらdomainの純粋関数へ切り出し、処理の順序・retry・保存はapplication/runtimeに残す。
