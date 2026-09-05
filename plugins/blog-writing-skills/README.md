@@ -30,8 +30,8 @@ sui-blog の記事を書くためのスキル集。ネタの判定、一次情�
 
 作業の流れは `pick-blog-topic` → `write-blog-article` → `article-review` / `tech-review` になる。`japanese-sentence-order` はブログ以外の日本語の文章にも使うため、どこからでも単独で起動できる。
 
-編集の観点（構成、日本語、読者が追えるか）と技術の観点（一次情報の裏取り、コードが動くか、バージョンの記載）を同時に見ると片方が雑になるため、`article-review` と `tech-review` を分けている。両方とも規範は `write-blog-article/references/sui-style.md` を相対パスで読む。
+編集の観点（構成、日本語、読者が追えるか）と技術の観点（一次情報の裏取り、コードが動くか、バージョンの記載）を同時に見ると片方が雑になるため、`article-review` と `tech-review` を分けている。両方とも規範は `write-blog-article/references/sui-style.md` を、レビュー結果の出力契約は `references/review-report.md` を読む。検証の記録は `examples/<slug>/` に残し、使い捨ての外部リポジトリは証拠を保存した後に削除する。
 
 ## 記事の型と検証
 
-記事は 4 つの型（変更への追随、手を動かす解説、調査と比較、意見と経験）に分け、型ごとに導入と見出しの進行が決まる。型 1〜3 では動かして確かめる検証が必須で、検証用のプロジェクトは sui-blog 側の `examples/<slug>/` に作る。このディレクトリは Git で管理しないため、sui-blog の `.gitignore` に `examples/` を入れておく。
+記事は 4 つの型（変更への追随、手を動かす解説、調査と比較、意見と経験）に分け、型ごとに導入と見出しの進行が決まる。型 1〜3 では動かして確かめる検証が必須で、検証用のプロジェクトは sui-blog 側の `examples/<slug>/` に作る。無い場合は最小限の環境を作り、workflow、実行 ID、ログの該当部分を検証記録に残す。このディレクトリは Git で管理しないため、sui-blog の `.gitignore` に `examples/` を入れておく。使い捨ての外部リポジトリは、証拠を保存した後に削除する。
