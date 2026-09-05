@@ -1,7 +1,7 @@
 {
   "name": "blog-writing-skills",
   "description": "sui-blog の記事を書くためのスキル集。ネタの判定、一次情報の調査と検証を含む初稿の執筆、構成と日本語の推敲、技術的な確認、一文の語順と読点の点検をカバー",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": {
     "name": "Suntory-N-Water"
   }
