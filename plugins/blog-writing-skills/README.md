@@ -1,6 +1,6 @@
 # blog-writing-skills
 
-ブログ・技術記事を書くためのスキル集。ネタの選別から思考深化と構成設計、初稿、推敲、日本語規範の点検までを 7 つのスキルに分けている。
+sui-blog の記事を書くためのスキル集。ネタの判定、一次情報の調査と検証を含む初稿の執筆、構成と日本語の推敲、技術的な確認、一文の語順の点検を 5 つのスキルに分けている。分割の軸は執筆の工程ではなく役割で、文章の規範は `write-blog-article/references/sui-style.md` の 1 ファイルに集約してある。
 
 ## インストール
 
@@ -10,32 +10,28 @@
 
 ## 収録スキル
 
-| スキル | 役割 |
-| --- | --- |
-| `blog-triage` | 素材・作業ログを書く価値で選別し、採用判定したネタを `neta` ラベル付き Issue に記録する |
-| `blog-thinking` | 対話でテーマを深掘りし、記事メッセージ・想定読者・切り口を言語化する |
-| `blog-structuring` | 言語化済みの素材から構成設計プランを作る。下書きの構成レビュー・再構成 |
-| `blog-drafting` | 構成案からの初稿執筆と文体寄せ。AI っぽさの除去 |
-| `blog-revision` | アテンションライティングと日本語作文技術の 2 軸での推敲・本文生成 |
-| `japanese-tech-writing` | 日本語技術文書の文章規範による点検 |
-| `cognitive-rhythm-writing` | 説明的な文章に認知モードの切替(緩急)を設計する |
+| スキル | 役割 | 主な成果物 |
+| --- | --- | --- |
+| `pick-blog-topic` | 溜めた素材や作業の記録から、記事にできるかを判定する | 「今すぐ書く」「材料が足りない」「見送る」の判定。材料が足りない場合は `neta` ラベル付き GitHub Issue |
+| `write-blog-article` | 一次情報を調べ、動かして確かめ、記事の初稿を書く | `contents/blog/<YYYY-MM-DD>_<slug>.md` |
+| `article-review` | 構成と日本語を読み、指摘を返す | 重大度つきの指摘の一覧 |
+| `tech-review` | 技術的な正しさ、証拠、再現できるかを確かめる | 重大度つきの指摘の一覧 |
+| `japanese-sentence-order` | 一文の中の語順と読点だけを見る | 対象の文、理由、書き換えた文 |
 
 ## 使い分け
 
-執筆フェーズで選ぶ。
-
 ```
-素材はあるが書くか決めていない → blog-triage
-テーマが曖昧 / Why を深めたい   → blog-thinking
-伝えたいことは決まった / 構成へ → blog-structuring
-構成案から本文を書く            → blog-drafting
-草稿を読まれる文章に直す        → blog-revision
-日本語の読みやすさを点検する    → japanese-tech-writing
-密度はあるが平坦な文章を直す    → cognitive-rhythm-writing
+素材や作業ログがあるが書くか決めていない → pick-blog-topic
+記事を書く、下書きを作る                  → write-blog-article
+書いた記事の構成と日本語を見る            → article-review
+書いた記事のコードと事実を確かめる        → tech-review
+一文が読みにくい（ブログ以外でも）        → japanese-sentence-order
 ```
 
-`blog-triage` は `blog-thinking` の前段に立つ。採用判定したネタだけを `neta` ラベル付き GitHub Issue に記録し、後日そこから選んだ Issue を `blog-thinking` へ渡す。記録先は blog-triage を呼び出した作業ディレクトリのリポジトリで、深掘りは grilling スキル(`mattpocock-skills:grilling`)へ委譲するため、そのプラグインのインストールが前提になる。
+作業の流れは `pick-blog-topic` → `write-blog-article` → `article-review` / `tech-review` になる。`japanese-sentence-order` はブログ以外の日本語の文章にも使うため、どこからでも単独で起動できる。
 
-`blog-thinking` と `blog-structuring` は並列の選択肢ではなく直列の関係。`blog-structuring` は冒頭で入力条件(記事メッセージ、想定読者、読者の Before / After、書き手固有の切り口)を検査し、Why が言語化されていなければ `blog-thinking` へ差し戻す。分類を間違えても復帰できるようにしてある。
+編集の観点（構成、日本語、読者が追えるか）と技術の観点（一次情報の裏取り、コードが動くか、バージョンの記載）を同時に見ると片方が雑になるため、`article-review` と `tech-review` を分けている。両方とも規範は `write-blog-article/references/sui-style.md` を相対パスで読む。
 
-各スキルは相互に参照し合う。`cognitive-rhythm-writing` は `japanese-tech-writing` を併用し、`blog-revision` は構成設計の詳細を `blog-structuring` に委ねる。
+## 記事の型と検証
+
+記事は 4 つの型（変更への追随、手を動かす解説、調査と比較、意見と経験）に分け、型ごとに導入と見出しの進行が決まる。型 1〜3 では動かして確かめる検証が必須で、検証用のプロジェクトは sui-blog 側の `examples/<slug>/` に作る。このディレクトリは Git で管理しないため、sui-blog の `.gitignore` に `examples/` を入れておく。
