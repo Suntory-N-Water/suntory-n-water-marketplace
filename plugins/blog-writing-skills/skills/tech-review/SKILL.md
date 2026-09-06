@@ -12,7 +12,7 @@ description: 記事の技術的な正しさ、一次情報の裏取り、コー�
 | ファイル | 読むタイミング |
 |---|---|
 | `references/technical-checklist.md` | 手順 1 の前。確認項目の一覧 |
-| `../write-blog-article/references/sui-style.md` | 「コードの扱い」「構成」の節。コードブロックと警告ブロックの書き方の規範 |
+| `../write-blog-article/references/sui-style.md` | 「コードの扱い」「構成」の節。コードブロック、条件、警告の書き方の規範 |
 | `../write-blog-article/references/research-and-validation.md` | 「記録する項目」の節。記録に何が書かれているべきかの基準 |
 | `../../references/review-report.md` | 手順 1 と 5。出力先、場所の示し方、件数、重大度、書き換えの扱い |
 
