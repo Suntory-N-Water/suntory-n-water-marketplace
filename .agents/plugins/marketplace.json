@@ -29,10 +29,10 @@
       "category": "Development"
     },
     {
-      "name": "blog-writing-skills",
+      "name": "blog-writing",
       "source": {
         "source": "local",
-        "path": "./plugins/blog-writing-skills"
+        "path": "./plugins/blog-writing"
       },
       "policy": {
         "installation": "AVAILABLE",

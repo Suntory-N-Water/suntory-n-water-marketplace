@@ -28,7 +28,7 @@ Claude Code 内で `/plugin install` を実行(例: ブログ・技術記事の�
 
 ```bash
 # ブログ・技術記事の執筆
-/plugin install blog-writing-skills@suntory-n-water-marketplace
+/plugin install blog-writing@suntory-n-water-marketplace
 ```
 
 ## Codex で利用
@@ -38,10 +38,10 @@ Codex 用のリポジトリマーケットプレイスを登録し、利用す�
 ```bash
 cd suntory-n-water-marketplace
 codex plugin marketplace add .
-codex plugin add blog-writing-skills@suntory-n-water-marketplace
+codex plugin add blog-writing@suntory-n-water-marketplace
 ```
 
-他のプラグインを利用する場合は、`blog-writing-skills` を
+他のプラグインを利用する場合は、`blog-writing` を
 `playwright-best-practices` または `general-dev-skills` に置き換える。
 インストール後は新しい Codex セッションを開始する。
 
@@ -151,7 +151,7 @@ bun run version-bump <plugin-name> <major|minor|patch>
 bun run version-bump playwright-best-practices patch
 
 # マイナー: 1.0.0 -> 1.1.0
-bun run version-bump blog-writing-skills minor
+bun run version-bump blog-writing minor
 
 # メジャー: 1.0.0 -> 2.0.0
 bun run version-bump general-dev-skills major

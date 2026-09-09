@@ -1,11 +1,11 @@
-# blog-writing-skills
+# blog-writing
 
 sui-blog の記事を書くためのスキル集。ネタの判定、一次情報の調査と検証を含む初稿の執筆、構成と日本語の推敲、技術的な確認、一文の語順の点検を 5 つのスキルに分けている。分割の軸は執筆の工程ではなく役割で、文章の規範は `write-blog-article/references/sui-style.md` の 1 ファイルに集約してある。
 
 ## インストール
 
 ```bash
-/plugin install blog-writing-skills@suntory-n-water-marketplace
+/plugin install blog-writing@suntory-n-water-marketplace
 ```
 
 ## 収録スキル
