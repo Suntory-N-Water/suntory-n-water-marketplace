@@ -9,7 +9,7 @@
     {
       "name": "playwright-best-practices",
       "description": "Playwright自動化のベストプラクティス。要素操作、待機戦略、ナビゲーションパターン、ロケータ使用法をカバー",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Suntory-N-Water"
       },
@@ -18,8 +18,8 @@
     },
     {
       "name": "general-dev-skills",
-      "description": "開発全般で使える汎用スキル集。Git/GitHubワークフロー管理など開発作業全般をカバー",
-      "version": "1.7.1",
+      "description": "開発全般で使える汎用スキル集。Git/GitHub ワークフロー、テスト設計、DDD のレイヤ分割、GitHub Actions の検査、textlint の ai-words 辞書への語の登録をカバー",
+      "version": "1.8.1",
       "author": {
         "name": "Suntory-N-Water"
       },
@@ -29,7 +29,7 @@
     {
       "name": "blog-writing",
       "description": "sui-blog の記事を書くためのスキル集。ネタの判定、一次情報の調査と検証を含む初稿の執筆、構成と日本語の推敲、技術的な確認、一文の語順と読点の点検をカバー",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "author": {
         "name": "Suntory-N-Water"
       },

@@ -61,8 +61,11 @@ plugins/
     ├── agents/               # エージェント定義 (任意)
     │   └── my-agent.md
     ├── skills/               # スキル定義 (任意)
-    │   └── my-skill/
-    │       └── SKILL.md
+    │   ├── my-skill/
+    │   │   └── SKILL.md
+    │   └── deprecated/       # 使うのをやめたスキルの置き場 (任意)
+    │       ├── README.md
+    │       └── old-skill/
     ├── hooks/                # フック定義 (任意)
     │   └── hooks.json
     ├── .mcp.json             # MCP サーバー設定 (任意)
@@ -90,6 +93,8 @@ Claude Code 用と Codex 用の両方の `plugin.json` を作成する。Codex �
 ```
 
 Codex 用の `.codex-plugin/plugin.json` には、少なくとも `skills` と `interface` を追加する。
+`skills` はディレクトリ指定ではなくスキルごとのパスの配列にする。Codex は `skills/`
+配下を再帰的に探すため、ディレクトリ指定だと `skills/deprecated/` まで読み込まれる。
 
 ```json
 {
@@ -97,7 +102,7 @@ Codex 用の `.codex-plugin/plugin.json` には、少なくとも `skills` と `
   "version": "1.0.0",
   "description": "プラグインの説明",
   "author": { "name": "作者名" },
-  "skills": "./skills/",
+  "skills": ["./skills/my-skill"],
   "interface": {
     "displayName": "My Plugin",
     "shortDescription": "プラグインの説明",
@@ -135,6 +140,19 @@ git add .
 git commit -m "Add my-plugin"
 git push
 ```
+
+## スキルの廃止方法
+
+使うのをやめたスキルは削除せず、`plugins/<plugin-name>/skills/deprecated/` へ移す。
+記述と履歴を残したまま読み込みだけを止められる。
+
+1. `skills/<skill-name>/` を `skills/deprecated/<skill-name>/` へ移す
+2. `.codex-plugin/plugin.json` の `skills` 配列から該当パスを外す
+3. `skills/deprecated/README.md` にやめた理由と後継を書く
+4. `bun run version-bump <plugin-name> minor` でバージョンを上げる
+
+Claude Code は `skills/` 直下の 1 階層しか見ないので、移した時点で読み込まれなくなる。
+Codex は `skills/` 配下を再帰的に探すため、配列から外す手順が要る。
 
 ## バージョン管理
 

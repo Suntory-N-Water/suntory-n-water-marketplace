@@ -1,23 +1,24 @@
 {
   "name": "general-dev-skills",
-  "version": "1.7.1",
-  "description": "開発全般で使える汎用スキル集。コーディング規約、デバッグ手順、リファクタリング指針、コードレビュー観点、テスト戦略をカバー",
+  "version": "1.8.1",
+  "description": "開発全般で使える汎用スキル集。Git/GitHub ワークフロー、テスト設計、DDD のレイヤ分割、GitHub Actions の検査、textlint の ai-words 辞書への語の登録をカバー",
   "author": {
     "name": "Suntory-N-Water"
   },
-  "skills": "./skills/",
+  "skills": [
+    "./skills/actions-check",
+    "./skills/ai-words-add",
+    "./skills/ddd-layering",
+    "./skills/managing-git-github-workflow",
+    "./skills/test-driven-design"
+  ],
   "interface": {
     "displayName": "General Dev Skills",
     "shortDescription": "開発全般で使える汎用スキル集",
     "longDescription": "コーディング規約、デバッグ、リファクタリング、コードレビュー、テスト設計を支援します。",
     "developerName": "Suntory-N-Water",
     "category": "Development",
-    "capabilities": [
-      "Read",
-      "Write"
-    ],
-    "defaultPrompt": [
-      "このコードに適用すべき開発プラクティスを教えて"
-    ]
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": ["このコードに適用すべき開発プラクティスを教えて"]
   }
 }
