@@ -16,21 +16,21 @@ sui-blog の記事を書くためのスキル集。ネタの判定、一次情�
 | `write-blog-article` | 一次情報を調べ、動かして確かめ、記事の初稿を書く | `contents/blog/<YYYY-MM-DD>_<slug>.md` |
 | `article-review` | 構成と日本語を読み、指摘を返す | 重大度つきの指摘の一覧 |
 | `tech-review` | 技術的な正しさ、証拠、再現できるかを確かめる | 重大度つきの指摘の一覧 |
-| `japanese-sentence-order` | 一文の中の語順と読点だけを見る | 対象の文、理由、書き換えた文 |
+| `japanese-sentence-order` | 一文の中の語順と読点だけを確認する | 対象の文、理由、書き換えた文 |
 
 ## 使い分け
 
 ```
 素材や作業ログがあるが書くか決めていない → pick-blog-topic
 記事を書く、下書きを作る                  → write-blog-article
-書いた記事の構成と日本語を見る            → article-review
+書いた記事の構成と日本語を確認する        → article-review
 書いた記事のコードと事実を確かめる        → tech-review
 一文が読みにくい（ブログ以外でも）        → japanese-sentence-order
 ```
 
 作業の流れは `pick-blog-topic` → `write-blog-article` → `article-review` / `tech-review` になる。`japanese-sentence-order` はブログ以外の日本語の文章にも使うため、どこからでも単独で起動できる。
 
-編集の観点（構成、日本語、読者が追えるか）と技術の観点（一次情報の裏取り、コードが動くか、バージョンの記載）を同時に見ると片方が雑になるため、`article-review` と `tech-review` を分けている。両方とも規範は `write-blog-article/references/sui-style.md` を、レビュー結果の出力契約は `references/review-report.md` を読む。検証の記録は `examples/<slug>/` に残し、使い捨ての外部リポジトリは証拠を保存した後に削除する。
+編集の観点（構成、日本語、読者が追えるか）と技術の観点（一次情報の裏取り、コードが動くか、バージョンの記載）を同時に確認すると片方が雑になるため、`article-review` と `tech-review` を分けている。両方とも規範は `write-blog-article/references/sui-style.md` を、レビュー結果の出力契約は `references/review-report.md` を読む。検証の記録は `examples/<slug>/` に残し、使い捨ての外部リポジトリは証拠を保存した後に削除する。
 
 ## 記事の型と検証
 
