@@ -35,6 +35,16 @@
       },
       "source": "./plugins/blog-writing",
       "category": "productivity"
+    },
+    {
+      "name": "general-dev-mods",
+      "description": "開発全般で使える Claude Mods 集。離席中にプロンプトキャッシュの 1 時間 TTL が失効する前へ conversation を自動で compact する cache-ttl-compact を含む。CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 が必要",
+      "version": "0.1.0",
+      "author": {
+        "name": "Suntory-N-Water"
+      },
+      "source": "./plugins/general-dev-mods",
+      "category": "productivity"
     }
   ]
 }

@@ -1,0 +1,4 @@
+{
+  "description": "開発全般で使う mod をまとめて読み込む。cache-ttl-compact は session.start で $.clock.every のタイマーを開始し、turn.complete (メインループのみ) で最終操作時刻を更新して、無操作が閾値を超えた周期で $.session.compact() を呼ぶ。",
+  "modules": ["./cache-ttl-compact/register.ts"]
+}

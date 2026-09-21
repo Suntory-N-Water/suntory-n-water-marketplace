@@ -1,0 +1,24 @@
+{
+  "name": "general-dev-mods",
+  "version": "0.1.0",
+  "description": "開発全般で使える Claude Mods 集。現在は cache-ttl-compact (離席が続いてプロンプトキャッシュの 1 時間 TTL が失効する前に conversation を自動で compact する) を含む。",
+  "author": {
+    "name": "Suntory-N-Water"
+  },
+  "userConfig": {
+    "cacheTtlCompactIdleMinutes": {
+      "type": "number",
+      "title": "compact するまでの無操作時間 (分)",
+      "description": "最後のターンが終わってからこの分数が過ぎたら compact する。プロンプトキャッシュの 1 時間より手前に置く。",
+      "required": false,
+      "default": 55
+    },
+    "cacheTtlCompactTickMinutes": {
+      "type": "number",
+      "title": "経過時間を確認する間隔 (分)",
+      "description": "この間隔で無操作時間を確認する。間隔がそのまま検知の遅れの上限になる。",
+      "required": false,
+      "default": 1
+    }
+  }
+}
