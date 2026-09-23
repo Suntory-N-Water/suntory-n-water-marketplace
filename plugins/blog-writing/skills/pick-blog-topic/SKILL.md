@@ -14,7 +14,7 @@ description: 素材、作業記録、過去の会話から sui-blog の記事の
 
 ## `ideas` コレクション
 
-公開ページを持たない、題材の記録専用のコレクションである。エントリーは常に下書きのまま扱い、公開しない。
+公開ページを持たない、題材の記録専用のコレクションである。エントリーは常に下書きのまま扱い、公開しない。公開しても表示するページがなく、下書きであれば公開用の API からも読まれないためである。
 
 | フィールド | 型 | 内容 |
 |---|---|---|
@@ -22,14 +22,12 @@ description: 素材、作業記録、過去の会話から sui-blog の記事の
 | `question` | text | 記事で答える問いを 1〜2 文で書く |
 | `stage` | select | 題材の状態。値は下表のとおり |
 | `body` | portableText | 参照資料、会話で整理した内容、具体例、足りないもの、確かめること。形式は [本文の形式](assets/idea-entry-template.md) に従う |
-| `post` | reference (`posts`) | この題材から書いた記事。書き終えたときに設定する |
 
 | `stage` の値 | 意味 |
 |---|---|
-| `todo` | 材料が足りず、まだ書き始めていない |
-| `writing` | 記事を書いている |
-| `done` | 記事にした |
-| `dropped` | 記事にしないと決めた |
+| `未着手` | まだ記事にしていない |
+| `完了` | 記事にした |
+| `ボツ` | 記事にしないと決めた |
 
 ## 参照資料
 
@@ -77,7 +75,7 @@ description: 素材、作業記録、過去の会話から sui-blog の記事の
 2. [本文の形式](assets/idea-entry-template.md) に沿って `body` を Markdown で組み立てる。記事の問い、説明、具体例、出所、確認状況、残っている調査や検証だけを記録する
 3. `content_create` を次の引数で呼ぶ。`status` は渡さない。渡さなければ下書きになる
    - `collection`: `"ideas"`
-   - `data`: `title`、`question`、`stage: "todo"`、`body`
+   - `data`: `title`、`question`、`stage: "未着手"`、`body`
 4. `content_get` で登録内容を読み返し、`title`、`question`、`stage`、`body` が意図どおりかを確かめる
 5. 登録したエントリーの id と `title` を伝える。管理画面では `https://suntory-n-water.com/_emdash/admin` の「記事の題材」から開ける
 
@@ -87,14 +85,13 @@ MCP で登録できない場合は、組み立てた `title`、`question`、`bod
 
 ## 記録済みの題材から選ぶ
 
-1. `content_list` を `collection: "ideas"`、`limit: 100` で呼び、`stage` が `todo` のエントリーを取り出す
+1. `content_list` を `collection: "ideas"`、`limit: 100` で呼び、`stage` が `未着手` のエントリーを取り出す
 2. 記事に進みやすい 2〜3 件を示す。更新日が新しいものと、「確かめること」が具体的に書かれているものを優先する。各候補には id、`title`、`question`、足りない材料を 1 行ずつ添え、全件は並べない
 3. 利用者に選んでもらい、ターンを終える
-4. 選ばれたエントリーを `content_get` で読み、`content_update` で `stage` を `writing` にする
-5. `body` の「足りないもの」と「確かめること」を、`write-blog-article` の最初の合意確認で扱う調査と検証の項目として引き継ぐ
+4. 選ばれたエントリーを `content_get` で読み、`body` の「足りないもの」と「確かめること」を、`write-blog-article` の最初の合意確認で扱う調査と検証の項目として引き継ぐ
 
-`todo` のエントリーがない場合は、その旨を伝え、新しい素材や作業記録を受け取って手順 1 から始める。
+`未着手` のエントリーがない場合は、その旨を伝え、新しい素材や作業記録を受け取って手順 1 から始める。
 
-## 題材を完了にする
+## 題材の状態を変える
 
-題材から書いた記事が `posts` に登録されたら、`content_update` で `stage` を `done` にし、`post` に記事の id を設定する。記事にしないと決めた題材は `stage` を `dropped` にし、理由を `body` の末尾に追記する。エントリーは削除しない。
+題材から書いた記事が `posts` に登録されたら、`content_update` で `stage` を `完了` にする。記事にしないと決めた題材は `stage` を `ボツ` にし、理由を `body` の末尾に追記する。エントリーは削除しない。
