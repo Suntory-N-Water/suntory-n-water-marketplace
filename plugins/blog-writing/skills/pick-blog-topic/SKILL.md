@@ -72,7 +72,7 @@ description: 素材、作業記録、過去の会話から sui-blog の記事の
 ## 題材を記録する
 
 1. 手順 2 で同じ切り口の題材が見つかった場合は、その内容を示し、既存のエントリーを更新するか新しく作るかを利用者に確認する
-2. [本文の形式](assets/idea-entry-template.md) に沿って `body` を Markdown で組み立てる。記事の問い、説明、具体例、出所、確認状況、残っている調査や検証だけを記録する
+2. [本文の形式](assets/idea-entry-template.md) に沿って `body` を Markdown で組み立てる。記事の問い、説明、具体例、出所、確認状況、残っている調査や検証だけを記録する。`body` の Markdown は Portable Text に変換されるため、`push_files` のように `_` を含む語はコードとして囲む。囲まないと `_` の間が斜体になる。複数の段落を引用するときは、段落ごとに `>` の行を分けて空行を挟む。`>` だけの行は本文として残る
 3. `content_create` を次の引数で呼ぶ。`status` は渡さない。渡さなければ下書きになる
    - `collection`: `"ideas"`
    - `data`: `title`、`question`、`stage: "未着手"`、`body`
