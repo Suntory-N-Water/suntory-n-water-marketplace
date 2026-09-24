@@ -58,6 +58,28 @@ export function register(on: On, options: PluginOptions): void {
     return next(e);
   });
 
+  // この mod 以外の compact (/compact や閾値での自動 compact) の後も、
+  // 次のターンが始まるまでは compact 済みの会話なので compact し直さない。
+  on('session.compact', async (_$, e, next) => {
+    const result = await next(e);
+    if (
+      e.agentId === undefined &&
+      e.trigger !== 'precompute' &&
+      result.skip === undefined
+    ) {
+      done = true;
+    }
+    return result;
+  });
+
+  // done を戻すのは turn.complete ではなく turn.start。ターンの途中で
+  // 自動 compact が実行された場合、turn.complete で戻すと compact 済みの印が消える。
+  // turn.start はサブエージェントでは発火しないので agentId を見なくてよい。
+  on('turn.start', (_$, e, next) => {
+    done = false;
+    return next(e);
+  });
+
   on('turn.complete', async ($, e, next) => {
     // agentId があるのはサブエージェントのターン。サブエージェントのリクエストは
     // メインの conversation のキャッシュを読まないので、TTL の起点にならない。
@@ -66,7 +88,6 @@ export function register(on: On, options: PluginOptions): void {
     }
 
     lastTurnEndedAt = await $.clock.now();
-    done = false;
     return next(e);
   });
 

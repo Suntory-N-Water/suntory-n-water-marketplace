@@ -1,6 +1,6 @@
 {
   "name": "general-dev-mods",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "開発全般で使える Claude Mods 集。現在は cache-ttl-compact (離席が続いてプロンプトキャッシュの 1 時間 TTL が失効する前に conversation を自動で compact する) を含む。",
   "author": {
     "name": "Suntory-N-Water"
