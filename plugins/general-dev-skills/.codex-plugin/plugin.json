@@ -18,12 +18,7 @@
     "longDescription": "コーディング規約、デバッグ、リファクタリング、コードレビュー、テスト設計を支援します。",
     "developerName": "Suntory-N-Water",
     "category": "Development",
-    "capabilities": [
-      "Read",
-      "Write"
-    ],
-    "defaultPrompt": [
-      "このコードに適用すべき開発プラクティスを教えて"
-    ]
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": ["このコードに適用すべき開発プラクティスを教えて"]
   }
 }
