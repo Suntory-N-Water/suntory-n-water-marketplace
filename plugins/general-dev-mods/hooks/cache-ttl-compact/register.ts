@@ -91,7 +91,17 @@ export function register(on: On, options: PluginOptions): void {
     return next(e);
   });
 
-  on('session.end', (_$, e, next) => {
+  on('session.end', async ($, e, next) => {
+    // /clear・/resume・/branch でも session.end は発火するが、プロセスは終了せず
+    // session.start も再発火しない。ここでタイマーを止めると再開されないので、
+    // 起点だけ新しい会話に合わせ直す。/branch の reason は resume になる。
+    if (e.reason === 'clear' || e.reason === 'resume') {
+      lastTurnEndedAt = await $.clock.now();
+      // /clear 直後の会話は空なので、次のターンが始まるまで compact しない。
+      done = e.reason === 'clear';
+      return next(e);
+    }
+
     timer?.cancel();
     timer = undefined;
     return next(e);
