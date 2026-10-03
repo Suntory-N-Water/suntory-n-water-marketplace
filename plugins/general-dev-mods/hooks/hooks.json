@@ -1,4 +1,4 @@
 {
-  "description": "開発全般で使う mod をまとめて読み込む。cache-ttl-compact は session.start で $.clock.every のタイマーを開始し、turn.complete (メインループのみ) で最終操作時刻を更新して、無操作が閾値を超えた周期で $.session.compact() を呼ぶ。session.compact でメインの会話の compact を検知し、次の turn.start までは compact し直さない。",
+  "description": "開発全般で使う mod をまとめて読み込む。cache-ttl-compact は session.start で $.clock.every のタイマーを開始し、turn.complete (メインループのみ) で最終操作時刻を更新して、無操作が閾値を超えた周期で $.session.compact() を呼ぶ。session.compact でメインの会話の compact を検知し、次の turn.start までは compact し直さない。キャッシュの有効期間 (既定 60 分) を過ぎてから確認した周期では compact しない。ui.render (AbovePrompt) で、残り時間に合わせて縮む氷を Raster で入力欄の上に描く。",
   "modules": ["./cache-ttl-compact/register.ts"]
 }

@@ -10,5 +10,5 @@
     "moduleResolution": "bundler",
     "target": "es2023"
   },
-  "include": [".claude/types", "hooks"]
+  "include": [".claude-plugin/types", "types", "hooks"]
 }
