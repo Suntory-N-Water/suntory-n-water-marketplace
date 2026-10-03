@@ -1,11 +1,10 @@
 {
   "name": "general-dev-mods",
-  "version": "0.2.0",
-  "description": "開発全般で使える Claude Mods 集。現在は cache-ttl-compact (離席が続いてプロンプトキャッシュの 1 時間 TTL が失効する前に conversation を自動で compact し、キャッシュの残り時間を溶ける氷で入力欄の上に表示する) を含む。",
+  "version": "0.2.1",
+  "description": "開発全般で使える Claude Mods 集。現在は cache-ttl-compact (離席が続いてプロンプトキャッシュの 1 時間 TTL が失効する前に conversation を自動で compact する) を含む。",
   "author": {
     "name": "Suntory-N-Water"
   },
-  "types": "./types/index.d.ts",
   "userConfig": {
     "cacheTtlCompactIdleMinutes": {
       "type": "number",
@@ -13,13 +12,6 @@
       "description": "最後のターンが終わってからこの分数が過ぎたら compact する。プロンプトキャッシュの 1 時間より手前に置く。",
       "required": false,
       "default": 55
-    },
-    "cacheTtlCompactCacheTtlMinutes": {
-      "type": "number",
-      "title": "プロンプトキャッシュの有効期間 (分)",
-      "description": "最後のターンが終わってからこの分数が過ぎたら、キャッシュが切れたとみなして compact せず、溶けた氷を表示する。",
-      "required": false,
-      "default": 60
     },
     "cacheTtlCompactTickMinutes": {
       "type": "number",
