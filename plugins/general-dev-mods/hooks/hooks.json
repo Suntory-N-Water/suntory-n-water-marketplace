@@ -1,4 +1,4 @@
 {
-  "description": "開発全般で使う mod をまとめて読み込む。cache-ttl-compact は session.start で $.clock.every のタイマーを開始し、turn.complete (メインループのみ) で最終操作時刻を更新して、無操作が閾値を超えた周期で $.session.compact() を呼ぶ。session.append でメインの会話に compact_boundary が記録されたことを検知し、次の turn.start までは compact し直さない。",
+  "description": "開発全般で使う mod をまとめて読み込む。cache-ttl-compact は session.start で $.clock.every のタイマーを開始し、turn.complete (メインループのみ) で最終操作時刻を更新して、無操作が閾値を超えた周期で $.session.compact() を呼ぶ。compact する前に、最後のターンの終了時より会話のトークン数の見積もりが減っていれば、ほかの方法で compact 済みと判定して compact しない。",
   "modules": ["./cache-ttl-compact/register.ts"]
 }
