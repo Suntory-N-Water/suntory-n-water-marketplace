@@ -60,16 +60,18 @@ export function register(on: On, options: PluginOptions): void {
 
   // この mod 以外の compact (/compact や閾値での自動 compact) の後も、
   // 次のターンが始まるまでは compact 済みの会話なので compact し直さない。
-  on('session.compact', async (_$, e, next) => {
-    const result = await next(e);
+  // session.compact では検知できない。先に並ぶ cc-plugin-sec-default が
+  // この mod の session.compact hook を呼ばずに次へ渡すため、done が立たない。
+  // compact_boundary の行は、誰が compact を起こしても engine が記録する。
+  on('session.append', (_$, e, next) => {
     if (
       e.agentId === undefined &&
-      e.trigger !== 'precompute' &&
-      result.skip === undefined
+      e.message.type === 'system' &&
+      e.message.name === 'compact_boundary'
     ) {
       done = true;
     }
-    return result;
+    return next(e);
   });
 
   // done を戻すのは turn.complete ではなく turn.start。ターンの途中で
