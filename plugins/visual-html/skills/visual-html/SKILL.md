@@ -5,9 +5,9 @@ description: 会話、Markdown、仕様書、調査メモ、比較表、記事�
 
 # Visual HTML
 
-会話やファイルの内容を、デジタル庁デザインシステム（DADS）に沿った図解つきの単一HTMLにして、完成したらその場で開く。
+会話やファイルの内容を、デジタル庁デザインシステム(DADS)に沿った図解つきの単一HTMLにして、完成したらその場で開く。
 
-AIが毎回違う図解を書くと表示が崩れ、出力トークンも増える。そのため、AIが書くのは内容を表すJSON（spec）だけにする。CSSとHTMLタグは `scripts/build_html.py` が組み立てるので、毎回同じデザインになり、HTMLエスケープもスクリプトが行う。
+AIが毎回違う図解を書くと表示が崩れ、出力トークンも増える。そのため、AIが書くのは内容を表すJSON(spec)だけにする。CSSとHTMLタグは `scripts/build_html.py` が組み立てるので、毎回同じデザインになり、HTMLエスケープもスクリプトが行う。
 
 ## 作業手順
 
@@ -16,8 +16,8 @@ AIが毎回違う図解を書くと表示が崩れ、出力トークンも増え
    - 仕様書は、要約、要件、API、リスク、未決事項に分ける。
    - 比較は、結論、選択肢、判断理由、注意点に分ける。
    - 調査メモや記事は、結論、根拠、次のアクションに分ける。
-3. 図解方針を決める。カード、表、流れ、グラフのどれかで、最低1つは視覚化する（下の「ブロックの選び方」）。
-4. specを `~/.cache/visual-html/{slug}.json` に書く（ディレクトリがなければ作る）。書式の見本は `assets/example-spec.json`。保存先をスキルのディレクトリにしないのは、プラグインの更新でスキルのディレクトリが置き換わり、生成物が消えるため。呼び出し元リポジトリ直下にも置かない。
+3. 図解方針を決める。カード、表、流れ、グラフのどれかで、最低1つは視覚化する(下の「ブロックの選び方」)。
+4. specを `~/.cache/visual-html/{slug}.json` に書く(ディレクトリがなければ作る)。書式の見本は `assets/example-spec.json`。保存先をスキルのディレクトリにしないのは、プラグインの更新でスキルのディレクトリが置き換わり、生成物が消えるため。呼び出し元リポジトリ直下にも置かない。
 5. 1コマンドでHTMLにして開く。
 
    ```bash
@@ -27,12 +27,12 @@ AIが毎回違う図解を書くと表示が崩れ、出力トークンも増え
    `--open` は、macOSでは `open`、WSLでは `explorer.exe`、その他のLinuxでは `xdg-open` を呼ぶ。
 
    入力がMarkdownファイルのときは `--source <原文.md>` を付ける。付けると次の2つをスクリプトが行う。
-   - specに `title` と `source_url` がなければ、原文のfrontmatter（`title`、`source`、`url` など）から補う。AIが写し間違えないようにするため。
+   - specに `title` と `source_url` がなければ、原文のfrontmatter(`title`、`source`、`url` など)から補う。AIが写し間違えないようにするため。
    - specに書いた数値と `` `識別子` `` のうち、原文にないものを `warning:` に出す。写し間違いに気づくため。集計して作った値も出るので、原文と見比べて判断する。
 
-   原文は `raw_markdown` ブロックで添付する。AIが書き写すと誤記が入るため、`path` にファイルを指定してスクリプトに読ませる。frontmatterは原文表示から除かれる。`raw_markdown` は折りたたみ表示を自前で持つので、`details` で包まない（`details` は `text` だけを取り、`blocks` を入れられない）。
+   原文は `raw_markdown` ブロックで添付する。AIが書き写すと誤記が入るため、`path` にファイルを指定してスクリプトに読ませる。frontmatterは原文表示から除かれる。`raw_markdown` は折りたたみ表示を自前で持つので、`details` で包まない(`details` は `text` だけを取り、`blocks` を入れられない)。
 
-   specの形式が多少ずれていても、スクリプトは停止せず補正してHTMLを出力する（表の列数の不一致、数値の誤り、未対応の種別など）。補正した内容は標準エラー出力の `warning:` に出る。形式が合っているかをユーザーに確認しない。スクリプトが停止してエラーになるのはJSONとして読めない場合だけで、その場合はJSONの構文を直して再実行する。
+   specの形式が多少ずれていても、スクリプトは停止せず補正してHTMLを出力する(表の列数の不一致、数値の誤り、未対応の種別など)。補正した内容は標準エラー出力の `warning:` に出る。形式が合っているかをユーザーに確認しない。スクリプトが停止してエラーになるのはJSONとして読めない場合だけで、その場合はJSONの構文を直して再実行する。
 
 6. `warning:` が出たときだけ、内容がずれていないかを見て、必要ならspecを直して再実行する。`warning:` がなければ、次の手順へ進む。
 7. HTMLのパスをコードブロックで返す。返答は短くする。
@@ -69,14 +69,14 @@ agent-browser screenshot --full ~/.cache/visual-html/{slug}.png
 | `title` | 必須 | 資料の題名 |
 | `sections` | 必須 | `heading` と `blocks` を持つセクションの配列 |
 | `lead` | 任意 | 1〜2文の要約 |
-| `eyebrow` | 任意 | 題名の上に出す資料の種類（「比較メモ」など） |
-| `organization`, `meta` | 任意 | ヘッダーの左（組織名や資料種別）と右（日付やバージョン） |
+| `eyebrow` | 任意 | 題名の上に出す資料の種類(「比較メモ」など) |
+| `organization`, `meta` | 任意 | ヘッダーの左(組織名や資料種別)と右(日付やバージョン) |
 | `meta_list` | 任意 | `[["対象", "…"], ["読者", "…"]]` の組。題名の下に並ぶ |
 | `toc` | 任意 | 目次の有無。省略するとセクションが5つ以上のときだけ出る |
 | `source_url` | 任意 | 出典URL。あるときだけフッターに出る |
 | `lang` | 任意 | 既定は `ja`。英語入力なら `en` |
 
-文字列中では `` `コード` `` と `**強調**` が使える。それ以外のHTMLタグは文字として表示される（実行されない）。
+文字列中では `` `コード` `` と `**強調**` が使える。それ以外のHTMLタグは文字として表示される(実行されない)。
 
 ## ブロックの選び方
 
@@ -84,16 +84,28 @@ agent-browser screenshot --full ~/.cache/visual-html/{slug}.png
 
 | 内容 | ブロック `type` |
 | --- | --- |
-| 結論、重要な判断 | `summary`（`items` に文の配列） |
-| 結論、重要数値、選択肢、ステータス | `cards`（`label` `value` `unit` `tag` `note` `emphasis`） |
-| 比較、API、要件、データ項目 | `table`（`headers` `rows`、数値列は `num_columns`、先頭列を見出しにするなら `row_headers`） |
-| 手順、業務フロー、タイムライン | `flow`（`items` に `label` `title` `text`） |
-| 数値の大小比較 | `bars`（`items` に `label` `value` `display`、基準を下回るものは `tone: "low"`） |
-| リスク、未決事項、前提、注意 | `banner`（`kind` は `success` `warning` `error` `info`） |
-| 段落 | `text`（注記は `note: true`） |
-| 補足の折りたたみ | `details` |
-| 入力Markdownの原文 | `raw_markdown`（`path`） |
-| 上のどれでも表せない構成図 | `figure`（`html` にinline SVG、`title` `caption`） |
+| 結論、重要な判断 | `summary`(`items` に文の配列) |
+| 結論、重要数値、選択肢、ステータス | `cards`(`label` `value` `unit` `tag` `note` `emphasis`) |
+| 比較、API、要件、データ項目 | `table`(`headers` `rows`、数値列は `num_columns`、先頭列を見出しにするなら `row_headers`) |
+| 手順、業務フロー、タイムライン、進捗 | `flow`(`items` に `label` `title` `text`。進捗は `state`、現在地は `current: true`、横並びは `orientation: "horizontal"`) |
+| 数値の大小比較 | `bars`(`items` に `label` `value` `display`、基準を下回るものは `tone: "low"`) |
+| リスク、未決事項、前提、注意 | `banner`(`kind` は `success` `warning` `error` `info`) |
+| 段落 | `text`(注記は `note: true`) |
+| 項目の列挙、手順の列挙 | `list`(`items` に文字列、または `text` と入れ子の `items`。番号付きは `ordered: true`) |
+| 用語と説明、項目名と値のペア | `description_list`(`items` に `term` と `text`) |
+| 原文や発言の引用 | `quote`(`text` に文字列または配列、出典は `source`) |
+| 主題の区切り | `divider` |
+| 参考資料、成果物、関連ドキュメントの一覧 | `resources`(`items` に `title` `url` `tag` `text` `sub`。`style` は `list` か `frame`) |
+| 補足の折りたたみ(1件) | `details` |
+| 同種の項目が並ぶ折りたたみ(FAQ、案ごとの詳細) | `accordion`(`items` に `title` と、`text` または `blocks`。最初から開くなら `open: true`) |
+| 入力Markdownの原文 | `raw_markdown`(`path`) |
+| 上のどれでも表せない構成図 | `figure`(`html` にinline SVG、`title` `caption`) |
+
+`flow` の `state` は `completed`(完了)、`reached`(到達済み)、`editing`(編集中)、`error`(エラー)、`skipped`(スキップ)のいずれかで、番号の下に文字でも表示される。進捗のない単なる手順には付けない。
+
+表のセルなど文字列の中にラベルを置くときは `[[kind|文字]]` と書く(`kind` は `success` `info` `warning` `error` `gray`)。`gray` は「未着手」「対象外」のように良し悪しを伴わない状態に使う。`cards` の `tag.kind` と `resources` の `tag.kind` も同じ値を取る。
+
+`resources` の `url` は `http(s)` かページ内リンクだけがリンクになる。それ以外はリンクにせず `warning:` を出す。
 
 `figure` の `html` は、AIが書いたSVGをそのまま入れる口になっている。`flow`、`cards`、`bars`、`table` で表せる内容は、これらのブロックを使う。表せない構成図だけ `figure` にする。ユーザーの入力文字列をここへ入れない。色と文字の大きさは `references/dads-design.md` の「手書きSVG」に従い、`<title>` と `<desc>` を付ける。
 
@@ -121,12 +133,12 @@ MarkdownをそのままHTMLタグに置き換えただけのものにしない�
 
 ## HTMLの最低条件
 
-- `<!DOCTYPE html>` から始まる完全なHTMLにする（スクリプトが満たす）。
+- `<!DOCTYPE html>` から始まる完全なHTMLにする(スクリプトが満たす)。
 - 外部CDN、Webフォント、画像に依存しない。スクリプトはCSSをHTML内に埋め込む。外部CDNを使わないため、Mermaidも使わない。
 
 ## 完了前チェック
 
-- HTMLを `~/.cache/visual-html/` に保存したか（呼び出し元リポジトリ直下やスキルのディレクトリに保存していないか）。
+- HTMLを `~/.cache/visual-html/` に保存したか(呼び出し元リポジトリ直下やスキルのディレクトリに保存していないか)。
 - 結論が冒頭で分かるか。
 - 図解や表が少なくとも1つあり、本文より理解しやすくなっているか。
 - ステータスや重要度が、色だけでなく文字でも示されているか。

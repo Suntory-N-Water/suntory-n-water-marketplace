@@ -42,13 +42,16 @@
         {
           "type": "table",
           "caption": "判断軸ごとの比較",
-          "headers": ["観点", "A案", "B案"],
+          "headers": ["観点", "A案", "B案", "判断"],
           "row_headers": true,
-          "rows": [["初期構築", "軽い", "重い"], ["運用", "重い", "軽い"]]
+          "rows": [
+            ["初期構築", "軽い", "重い", "[[gray|重視しない]]"],
+            ["運用", "重い", "軽い", "[[success|重視する]]"]
+          ]
         },
         {
           "type": "bars",
-          "title": "運用に使う時間（月あたり、推測）",
+          "title": "運用に使う時間(月あたり、推測)",
           "max": 40,
           "items": [
             { "label": "A案", "value": 32, "display": "32時間", "tone": "low" },
@@ -66,10 +69,62 @@
             {
               "label": "第1週",
               "title": "B案の環境を構築する",
-              "text": "`terraform apply` で基盤を作る。"
+              "text": "`terraform apply` で基盤を作る。",
+              "state": "completed"
             },
-            { "label": "第2週", "title": "既存データを移す" },
+            {
+              "label": "第2週",
+              "title": "既存データを移す",
+              "state": "reached",
+              "current": true
+            },
             { "label": "第3週", "title": "A案を停止する" }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "用語と前提",
+      "blocks": [
+        {
+          "type": "description_list",
+          "items": [
+            { "term": "運用負荷", "text": "月あたりの手作業の時間。" },
+            { "term": "初期構築", "text": "本番に切り替えるまでの準備作業。" }
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "運用担当は2名のままとする。",
+            {
+              "text": "見積もりの前提",
+              "items": ["現行の件数を維持する。", "夜間の対応は含めない。"]
+            }
+          ]
+        },
+        {
+          "type": "quote",
+          "text": "運用を軽くすることを、初期の速さより優先する。",
+          "source": "チーム定例(推測)"
+        },
+        { "type": "divider" },
+        {
+          "type": "resources",
+          "style": "frame",
+          "items": [
+            {
+              "title": "B案の構築手順",
+              "url": "https://example.com/runbook",
+              "tag": { "text": "未確認", "kind": "warning" },
+              "text": "構築の手順書。内容は未確認。"
+            },
+            {
+              "title": "A案の運用記録",
+              "tag": { "text": "参考", "kind": "gray" },
+              "text": "過去3か月分。",
+              "sub": "2026年10月"
+            }
           ]
         }
       ]
@@ -88,6 +143,26 @@
           "kind": "info",
           "title": "前提",
           "text": "運用担当は2名のままとする。"
+        },
+        {
+          "type": "accordion",
+          "items": [
+            {
+              "title": "A案を選ぶ場合の条件",
+              "text": "立ち上げの早さを最優先する場合に限る。"
+            },
+            {
+              "title": "B案の工数の内訳",
+              "open": true,
+              "blocks": [
+                {
+                  "type": "list",
+                  "ordered": true,
+                  "items": ["基盤の構築", "データの移行", "切り替えの確認"]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

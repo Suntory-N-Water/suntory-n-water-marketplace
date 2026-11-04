@@ -1,18 +1,25 @@
 {
   "name": "visual-html",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "会話、Markdown、仕様書、調査メモ、比較表をデジタル庁デザインシステムに沿った図解つきの単一 HTML にして、ブラウザで開く",
   "author": {
     "name": "Suntory-N-Water"
   },
-  "skills": ["./skills/visual-html"],
+  "skills": [
+    "./skills/visual-html"
+  ],
   "interface": {
     "displayName": "Visual HTML",
     "shortDescription": "内容を図解つきの単一 HTML にしてブラウザで開く",
     "longDescription": "AI が内容を表す JSON だけを書き、同梱のスクリプトがデジタル庁デザインシステムに沿った CSS と HTML を組み立てます。毎回同じデザインの単一 HTML を作り、ブラウザで開きます。",
     "developerName": "Suntory-N-Water",
     "category": "Productivity",
-    "capabilities": ["Read", "Write"],
-    "defaultPrompt": ["この Markdown を図解して"]
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "この Markdown を図解して"
+    ]
   }
 }

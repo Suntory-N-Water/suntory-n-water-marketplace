@@ -25,7 +25,25 @@ ICONS = {
     "error": '<circle cx="12" cy="12" r="11" fill="#ce0000"/><path d="M8 8 L16 16 M16 8 L8 16" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"/>',
     "info": '<circle cx="12" cy="12" r="11" fill="#0017c1"/><path d="M12 11 V17 M12 7 V8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"/>',
 }
-TAG_KINDS = {"success", "info", "warning", "error"}
+TAG_KINDS = {"success", "info", "warning", "error", "gray"}
+
+# ステップナビゲーションの状態。原本のアイコンに、色や形だけで伝えないための表示文字を添える
+STEP_STATES = {
+    "completed": (
+        "完了",
+        '<circle cx="12" cy="12" r="12" fill="#666"/><path d="M10 17.5 19.8 8l-1.5-1.5-8.1 8-4.1-4L4.5 12l5.6 5.5Z" fill="#fff"/>',
+    ),
+    "reached": ("到達済み", ""),
+    "editing": (
+        "編集中",
+        '<path d="M5.8 20c-.5 0-1-.2-1.3-.5-.3-.4-.5-.8-.5-1.3V5.6c0-.5.2-.9.5-1.3.4-.3.8-.5 1.3-.5h8L12 5.6H5.8v12.6h12.6V12l1.8-1.8v8c0 .5-.2 1-.5 1.3-.4.3-.8.5-1.3.5H5.8Zm3.6-5.4v-3.8l8.3-8.3a1.8 1.8 0 0 1 2.5 0l1.3 1.3.4.6a1.7 1.7 0 0 1 0 1.3c-.1.3-.2.5-.4.6l-8.3 8.3H9.4Zm1.8-1.8h1.3l5.2-5.2L17 7l-.7-.7-5.2 5.2v1.3Z" fill="#333"/>',
+    ),
+    "error": (
+        "エラー",
+        '<path d="M1 21 12 2l11 19H1Zm3.5-2h15L12 6 4.5 19Zm7.5-1c.3 0 .5-.1.7-.3.2-.2.3-.4.3-.7a1 1 0 0 0-.3-.7 1 1 0 0 0-.7-.3 1 1 0 0 0-.7.3 1 1 0 0 0-.3.7c0 .3.1.5.3.7.2.2.4.3.7.3Zm-1-3h2v-5h-2v5Z" fill="#ec0000"/>',
+    ),
+    "skipped": ("スキップ", ""),
+}
 
 warnings = []
 
@@ -41,6 +59,8 @@ def esc(value):
 def inline(value):
     # 先にエスケープしてから記法を置換するため、入力に含まれるタグは実行されない
     out = esc(value)
+    # 表のセルなど文字列の中に状態のラベルを置くための記法: [[warning|未確認]]
+    out = re.sub(r"\[\[(" + "|".join(sorted(TAG_KINDS)) + r")\|([^\]]+)\]\]", r'<span class="tag tag--\1">\2</span>', out)
     out = re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
     out = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", out)
     return out
@@ -76,6 +96,24 @@ def to_float(value, default=0.0, where=""):
         return default
 
 
+def safe_url(value, where):
+    # href に入れる値なので、javascript: などのスキームを除くため http(s) とページ内リンクだけ許可する
+    url = str(value).strip()
+    if re.match(r"(https?://|#)", url, re.I):
+        return url
+    warn(f"{where}: url '{url}' は http(s) かページ内リンクではないため、リンクにしません")
+    return ""
+
+
+def tag_html(t, where):
+    t = t if isinstance(t, dict) else {"text": t}
+    kind = t.get("kind", "info")
+    if kind not in TAG_KINDS:
+        warn(f"{where}: tag.kind '{kind}' は未対応です。info として扱います")
+        kind = "info"
+    return f'<span class="tag tag--{kind}">{esc(t.get("text", ""))}</span>'
+
+
 def render_text(b, where):
     cls = ' class="note"' if b.get("note") else ""
     return f"<p{cls}>{inline(get(b, 'text', where=where))}</p>"
@@ -93,17 +131,9 @@ def render_cards(b, where):
         cls = "card card--emphasis" if c.get("emphasis") else "card"
         value = str(c.get("value", ""))
         unit = f"<small>{esc(c['unit'])}</small>" if c.get("unit") else ""
-        # 数値カードだけ大きな文字にし、文章の値（「B案を推奨」など）は折り返せる大きさにする
+        # 数値カードだけ大きな文字にし、文章の値(「B案を推奨」など)は折り返せる大きさにする
         value_cls = "card__value card__value--number" if re.fullmatch(r"[\d,.\-+]+", value) else "card__value"
-        tag = ""
-        t = c.get("tag")
-        if t:
-            t = t if isinstance(t, dict) else {"text": t}
-            kind = t.get("kind", "info")
-            if kind not in TAG_KINDS:
-                warn(f"{where} cards[{n}]: tag.kind '{kind}' は未対応です。info として扱います")
-                kind = "info"
-            tag = f'<span class="tag tag--{kind}">{esc(t.get("text", ""))}</span> '
+        tag = f'{tag_html(c["tag"], f"{where} cards[{n}]")} ' if c.get("tag") else ""
         note = inline(c["note"]) if c.get("note") else ""
         sub = f'<p class="card__sub">{tag}{note}</p>' if (tag or note) else ""
         label = f'<p class="card__label">{inline(c["label"])}</p>' if c.get("label") else ""
@@ -139,13 +169,141 @@ def render_table(b, where):
 
 
 def render_flow(b, where):
+    orientation = b.get("orientation", "vertical")
+    if orientation not in ("vertical", "horizontal"):
+        warn(f"{where}: flow.orientation '{orientation}' は未対応です。vertical として扱います")
+        orientation = "vertical"
+    raw_items = as_list(get(b, "items", [], where))
+    items = [as_dict(raw, f"{where} flow[{n}]") for n, raw in enumerate(raw_items, 1)]
+    total = len(items)
+    reached = 0
+    steps = []
+    for n, it in enumerate(items, 1):
+        state = it.get("state")
+        if state and state not in STEP_STATES:
+            warn(f"{where} flow[{n}]: state '{state}' は未対応です。状態なしとして扱います")
+            state = None
+        if state in ("completed", "reached", "editing", "error"):
+            reached = n
+        attrs = f' data-state="{state}"' if state else ""
+        attrs += " data-first" if n == 1 else ""
+        attrs += " data-last" if n == total else ""
+        attrs += ' aria-current="true"' if it.get("current") else ""
+        marker = ""
+        if state:
+            state_label, icon = STEP_STATES[state]
+            icon_html = (
+                f'<span class="dads-step-navigation__state-icon"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">{icon}</svg></span>'
+                if icon
+                else ""
+            )
+            marker = f'{icon_html}<span class="dads-step-navigation__state-label">{state_label}</span>'
+        period = f'<p class="dads-step-navigation__period">{esc(it["label"])}</p>' if it.get("label") else ""
+        text = f'<p>{inline(it["text"])}</p>' if it.get("text") else ""
+        description = f'<div class="dads-step-navigation__description">{period}{text}</div>' if (period or text) else ""
+        steps.append(
+            f'<li class="dads-step-navigation__step"{attrs}><span class="dads-step-navigation__header">'
+            f'<span class="dads-u-visually-hidden">ステップ</span>'
+            f'<span class="dads-step-navigation__number">{n}{marker}</span>'
+            f'<span class="dads-step-navigation__title">{inline(it.get("title", ""))}</span></span>{description}</li>'
+        )
+    progress = (
+        f'<p class="dads-u-visually-hidden">全{total}ステップ中、{reached}ステップ目まで到達済み</p>'
+        if reached
+        else ""
+    )
+    # 横向きは既定の幅 320px だと 4 ステップ以上で横スクロールになるため、本文幅に収まるよう縮める
+    width = f' style="--_step-width: {max(160, min(320, 960 // max(total, 1)))}; --_step-min-width: 120;"' if orientation == "horizontal" else ""
+    return (
+        f'<div class="dads-step-navigation" data-orientation="{orientation}" data-size="normal"{width}>'
+        f'{progress}<ul>{"".join(steps)}</ul></div>'
+    )
+
+
+def render_list_items(items, tag, spacing, where):
+    out = []
+    for n, raw in enumerate(as_list(items), 1):
+        if isinstance(raw, dict):
+            sub = raw.get("items")
+            nested = render_list_items(sub, tag, spacing, f"{where}[{n}]") if sub else ""
+            out.append(f"<li>{inline(raw.get('text', ''))}{nested}</li>")
+        else:
+            out.append(f"<li>{inline(raw)}</li>")
+    return f'<{tag} class="dads-list" data-spacing="{spacing}">{"".join(out)}</{tag}>'
+
+
+def render_list(b, where):
+    spacing = b.get("spacing", 4)
+    if spacing not in (4, 8, 12):
+        warn(f"{where}: list.spacing '{spacing}' は未対応です。4 として扱います")
+        spacing = 4
+    return render_list_items(get(b, "items", [], where), "ol" if b.get("ordered") else "ul", spacing, where)
+
+
+def render_description_list(b, where):
+    rows = []
+    for n, raw in enumerate(as_list(get(b, "items", [], where)), 1):
+        if isinstance(raw, (list, tuple)) and len(raw) == 2:
+            term, text = raw
+        else:
+            it = as_dict(raw, f"{where} items[{n}]")
+            term, text = get(it, "term", "", f"{where} items[{n}]"), it.get("text", "")
+        rows.append(f"<div><dt>{inline(term)}</dt><dd>{inline(text)}</dd></div>")
+    marker = ' data-marker="bullet"' if b.get("marker") == "bullet" else ""
+    return f'<dl class="dads-description-list"{marker}>{"".join(rows)}</dl>'
+
+
+def render_quote(b, where):
+    paragraphs = "".join(f"<p>{inline(p)}</p>" for p in as_list(get(b, "text", [], where)))
+    source = f'<p class="dads-blockquote__source">出典: {inline(b["source"])}</p>' if b.get("source") else ""
+    return f'<blockquote class="dads-blockquote">{paragraphs}{source}</blockquote>'
+
+
+def render_divider(b, where):
+    return '<hr class="dads-divider">'
+
+
+def render_accordion(b, where, base):
+    chevron = '<path d="M3.3 7.3L12 16L20.7 7.3" fill="none" stroke="currentcolor" stroke-width="2"/>'
     items = []
     for n, raw in enumerate(as_list(get(b, "items", [], where)), 1):
-        it = as_dict(raw, f"{where} flow[{n}]")
-        label = f'<p class="flow__label">{esc(it["label"])}</p>' if it.get("label") else ""
-        text = f'<p class="flow__text">{inline(it["text"])}</p>' if it.get("text") else ""
-        items.append(f'<li class="flow__item">{label}<p class="flow__title">{inline(it.get("title", ""))}</p>{text}</li>')
-    return f'<ol class="flow">{"".join(items)}</ol>'
+        it = as_dict(raw, f"{where} accordion[{n}]")
+        opened = " open" if it.get("open") else ""
+        if it.get("blocks"):
+            body = "".join(render_block(blk, f"{where} accordion[{n}] blocks[{m}]", base) for m, blk in enumerate(as_list(it["blocks"]), 1))
+        else:
+            body = f'<div class="block"><p>{inline(it.get("text", ""))}</p></div>'
+        items.append(
+            f'<details class="dads-accordion"{opened}><summary class="dads-accordion__summary">'
+            f'<span class="dads-accordion__icon"><svg class="dads-accordion__icon-svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">{chevron}</svg></span>'
+            f'<h3>{inline(get(it, "title", "", f"{where} accordion[{n}]"))}</h3></summary>'
+            f'<div class="dads-accordion__content">{body}</div></details>'
+        )
+    return f'<div>{"".join(items)}</div>'
+
+
+def render_resources(b, where):
+    style = b.get("style", "list")
+    if style not in ("list", "frame"):
+        warn(f"{where}: resources.style '{style}' は未対応です。list として扱います")
+        style = "list"
+    items = []
+    for n, raw in enumerate(as_list(get(b, "items", [], where)), 1):
+        it = as_dict(raw, f"{where} resources[{n}]")
+        w = f"{where} resources[{n}]"
+        title = inline(get(it, "title", "", w))
+        url = safe_url(it["url"], w) if it.get("url") else ""
+        if url:
+            title = f'<a href="{esc(url)}">{title}</a>'
+        label = f'<div class="dads-resource-list__label">{tag_html(it["tag"], w)}</div>' if it.get("tag") else ""
+        support = f'<div class="dads-resource-list__support"><p>{inline(it["text"])}</p></div>' if it.get("text") else ""
+        sub = f'<div class="dads-resource-list__sub"><p>{inline(it["sub"])}</p></div>' if it.get("sub") else ""
+        items.append(
+            f'<li><div class="dads-resource-list" data-style="{style}"><div class="dads-resource-list__body">'
+            f'<div class="dads-resource-list__contents">{label}<h3 class="dads-resource-list__title">{title}</h3>{support}</div>'
+            f"{sub}</div></div></li>"
+        )
+    return f'<ul class="dads-resource-list__items">{"".join(items)}</ul>'
 
 
 def render_banner(b, where):
@@ -183,7 +341,10 @@ def render_details(b, where):
 
 FRONTMATTER = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n?", re.S)
 # SPEC のうち文字列として照合しないキー。識別子や設定値で、原文に書かれていなくてよい
-NON_TEXT_KEYS = {"type", "kind", "tone", "id", "lang", "path", "html", "source_url", "tag_kind"}
+NON_TEXT_KEYS = {
+    "type", "kind", "tone", "id", "lang", "path", "html", "source_url", "tag_kind",
+    "url", "state", "orientation", "style", "marker",
+}
 
 
 def split_frontmatter(text):
@@ -205,9 +366,9 @@ def render_raw_markdown(b, where, base):
         # frontmatter は公開する資料に不要なため、原文表示から除く
         _, text = split_frontmatter(path.read_text(encoding="utf-8"))
     except OSError as e:
-        warn(f"{where}: 原文 {path} を読めません（{e.__class__.__name__}）。このブロックを省略します")
+        warn(f"{where}: 原文 {path} を読めません({e.__class__.__name__})。このブロックを省略します")
         return ""
-    return f'<details><summary>{esc(b.get("summary", "原文（Markdown）"))}</summary><pre class="raw-md">{esc(text)}</pre></details>'
+    return f'<details><summary>{esc(b.get("summary", "原文(Markdown)"))}</summary><pre class="raw-md">{esc(text)}</pre></details>'
 
 
 def render_figure(b, where):
@@ -220,7 +381,8 @@ def render_figure(b, where):
 RENDERERS = {
     "text": render_text, "summary": render_summary, "cards": render_cards, "table": render_table,
     "flow": render_flow, "banner": render_banner, "bars": render_bars, "details": render_details,
-    "figure": render_figure,
+    "figure": render_figure, "list": render_list, "description_list": render_description_list,
+    "quote": render_quote, "divider": render_divider, "resources": render_resources,
 }
 
 
@@ -231,6 +393,8 @@ def render_block(raw, where, base):
     t = b.get("type")
     if t == "raw_markdown":
         inner = render_raw_markdown(b, where, base)
+    elif t == "accordion":
+        inner = render_accordion(b, where, base)
     elif t in RENDERERS:
         inner = RENDERERS[t](b, where)
     elif b.get("text"):
@@ -301,7 +465,7 @@ def build(spec, base):
         secs.append(f'<section id="{sid}" aria-labelledby="h-{sid}"><h2 id="h-{sid}">{esc(heading)}</h2>{blocks}</section>')
 
     parts.append(f'<main id="main" class="container">{"".join(head)}{toc}{"".join(secs)}</main>')
-    # フッターは出典 URL があるときだけ出す（SKILL.md の方針）
+    # フッターは出典 URL があるときだけ出す(SKILL.md の方針)
     if spec.get("source_url"):
         url = esc(spec["source_url"])
         parts.append(f'<footer class="site-footer"><div class="container">出典: <a href="{url}">{url}</a></div></footer>')
@@ -386,7 +550,7 @@ def open_in_viewer(path):
         # explorer.exe は開けたときも終了コード 1 を返すため、終了コードは見ない
         subprocess.run(command, check=False)
     except OSError as e:
-        warn(f"HTML を自動で開けませんでした（{command[0]}: {e}）。出力されたパスを手で開いてください")
+        warn(f"HTML を自動で開けませんでした({command[0]}: {e})。出力されたパスを手で開いてください")
 
 
 def main(argv):
@@ -394,7 +558,7 @@ def main(argv):
     parser.add_argument("spec")
     parser.add_argument("output")
     parser.add_argument("--source", help="原文の Markdown。数値と識別子を照合し、title と出典 URL を frontmatter から補う")
-    parser.add_argument("--open", action="store_true", help="出力した HTML を OS の既定のアプリで開く（macOS は open、WSL は explorer.exe）")
+    parser.add_argument("--open", action="store_true", help="出力した HTML を OS の既定のアプリで開く(macOS は open、WSL は explorer.exe)")
     args = parser.parse_args(argv[1:])
     spec_path, out_path = Path(args.spec).resolve(), Path(args.output)
     try:
