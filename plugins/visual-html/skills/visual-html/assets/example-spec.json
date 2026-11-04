@@ -1,0 +1,95 @@
+{
+  "title": "A案とB案の比較",
+  "eyebrow": "比較メモ",
+  "organization": "設計メモ",
+  "meta": "2026年11月",
+  "lead": "初期の速さを取るか、長期の運用の軽さを取るかを比べ、B案を推奨します。",
+  "meta_list": [["対象", "運用基盤の選定"], ["読者", "開発チーム"]],
+  "sections": [
+    {
+      "heading": "結論",
+      "blocks": [
+        {
+          "type": "summary",
+          "items": [
+            "**B案を推奨する。** 初期構築は重いが、長期の運用負荷が低い。",
+            "A案は立ち上げが早いが、運用の手作業が残る。"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "比較",
+      "blocks": [
+        {
+          "type": "cards",
+          "items": [
+            {
+              "label": "A案",
+              "value": "早い",
+              "tag": { "text": "運用が重い", "kind": "warning" },
+              "note": "立ち上げは短期間で済む。"
+            },
+            {
+              "label": "B案",
+              "value": "推奨",
+              "emphasis": true,
+              "tag": { "text": "運用が軽い", "kind": "success" },
+              "note": "初期構築に時間がかかる。"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "caption": "判断軸ごとの比較",
+          "headers": ["観点", "A案", "B案"],
+          "row_headers": true,
+          "rows": [["初期構築", "軽い", "重い"], ["運用", "重い", "軽い"]]
+        },
+        {
+          "type": "bars",
+          "title": "運用に使う時間（月あたり、推測）",
+          "max": 40,
+          "items": [
+            { "label": "A案", "value": 32, "display": "32時間", "tone": "low" },
+            { "label": "B案", "value": 8, "display": "8時間" }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "移行の流れ",
+      "blocks": [
+        {
+          "type": "flow",
+          "items": [
+            {
+              "label": "第1週",
+              "title": "B案の環境を構築する",
+              "text": "`terraform apply` で基盤を作る。"
+            },
+            { "label": "第2週", "title": "既存データを移す" },
+            { "label": "第3週", "title": "A案を停止する" }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "リスクと未決事項",
+      "blocks": [
+        {
+          "type": "banner",
+          "kind": "warning",
+          "title": "未確認: B案の初期構築の工数",
+          "text": "見積もりは推測であり、実測していない。"
+        },
+        {
+          "type": "banner",
+          "kind": "info",
+          "title": "前提",
+          "text": "運用担当は2名のままとする。"
+        }
+      ]
+    }
+  ]
+}

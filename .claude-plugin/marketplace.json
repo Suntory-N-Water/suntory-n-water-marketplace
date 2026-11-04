@@ -45,6 +45,16 @@
       },
       "source": "./plugins/general-dev-mods",
       "category": "productivity"
+    },
+    {
+      "name": "visual-html",
+      "description": "会話、Markdown、仕様書、調査メモ、比較表をデジタル庁デザインシステムに沿った図解つきの単一 HTML にして、ブラウザで開く",
+      "version": "0.1.0",
+      "author": {
+        "name": "Suntory-N-Water"
+      },
+      "source": "./plugins/visual-html",
+      "category": "productivity"
     }
   ]
 }

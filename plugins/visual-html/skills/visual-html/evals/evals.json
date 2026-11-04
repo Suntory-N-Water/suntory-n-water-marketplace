@@ -1,0 +1,54 @@
+{
+  "skill_name": "visual-html",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "evals/fixtures/payment-api.md を図解して。",
+      "expected_output": "Markdown を読み、構成図や比較表を含む単一 HTML を出力ディレクトリに保存し、パスを返す。",
+      "files": ["evals/fixtures/payment-api.md"],
+      "assertions": [
+        "build_html.py に --source で原文を渡している",
+        "build_html.py に --open を付けている",
+        "HTML が出力ディレクトリに 1 ファイルだけ保存される（日付やハッシュ付きの複製がない）",
+        "wrangler、R2、Cloudflare、publish.sh に触れていない",
+        "返答に HTML ファイルのパスが含まれ、URL は含まれない",
+        "カード、表、flow、bars のいずれかが含まれる",
+        "原文にない数値や識別子の warning: が出たときは、原文と見比べて対応している",
+        "外部 CDN を読み込まない",
+        "デジタル庁デザインシステムのプライマリー色 #0017c1 が使われている",
+        "幅 375px の確認をしていない"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "evals/fixtures/payment-api.md を仕様書として読みやすいHTMLにして。要件、API、リスク、未決事項を整理し、構成図かフロー図も入れて。",
+      "expected_output": "ファイルを読み、識別子を保ったまま仕様書 HTML に再構成し、出力ディレクトリに保存して開き、パスを返す。",
+      "files": ["evals/fixtures/payment-api.md"],
+      "assertions": [
+        "POST /api/payments と GET /api/payments/{paymentId} が正確に残る",
+        "MUST/SHOULD 要件が表で整理される",
+        "リスクと未決事項が分かれている",
+        "構成図またはフロー図が含まれる",
+        "build_html.py に --source evals/fixtures/payment-api.md を付けている",
+        "原文表示に frontmatter が含まれない",
+        "リスクまたは未決事項がバナーなど色と文字の両方で注意を示す形になっている",
+        "表の見出しセルに scope 属性がある"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "昨日の調査結果をHTML化して。カードと簡単なタイムラインを入れて、CDNは使わないで。調査結果は次のとおり。10/30に社内の問い合わせ記録200件を集計し、返信まで平均18時間かかっていると分かった。10/31にFAQを見直し、頻出5項目を特定した。11/1にFAQ5項目を回答テンプレートにした。11/2にテンプレートを試験運用し、平均返信時間が11時間に下がった。次は11/5に全チームへ展開する。",
+      "expected_output": "与えられた調査結果から自己完結 HTML を作って出力ディレクトリに保存し、カードとタイムラインで整理し、パスを返す。",
+      "files": [],
+      "assertions": [
+        "カード形式の要約が含まれる",
+        "タイムラインが含まれる",
+        "script src や link rel による外部 CDN 参照がない",
+        "数値 18時間 と 11時間 が入力どおりに残る",
+        "h1 が 1 つで、見出し階層が飛んでいない",
+        "build_html.py に --open を付けている",
+        "共有や公開について確認していない"
+      ]
+    }
+  ]
+}
