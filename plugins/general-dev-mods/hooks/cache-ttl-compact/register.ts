@@ -2,6 +2,18 @@ import type { EngineInterface, On, PluginOptions, Timer } from 'claude-code';
 
 const MINUTE = 60_000;
 
+// Claude Code の mod 読み込み処理は、$ を渡す先がファイルの一番外側で宣言された関数でないと mod 全体を読み込まない。
+// breakdown: 'summary' は token-count API を呼ばずに手元で見積もる。
+// 見積もれない環境では undefined を返し、compact 済みの判定を諦めて compact する。
+async function estimateTokens($: EngineInterface): Promise<number | undefined> {
+  try {
+    const { context } = await $.session.usage({ breakdown: 'summary' });
+    return context.breakdown?.totalTokens;
+  } catch {
+    return undefined;
+  }
+}
+
 export function register(on: On, options: PluginOptions): void {
   const idleMs = Number(options.cacheTtlCompactIdleMinutes ?? 55) * MINUTE;
   const tickMs = Number(options.cacheTtlCompactTickMinutes ?? 1) * MINUTE;
@@ -10,19 +22,6 @@ export function register(on: On, options: PluginOptions): void {
   let lastTurnEndedAt = 0;
   let tokensAtTurnEnd: number | undefined;
   let done = false;
-
-  // breakdown: 'summary' は token-count API を呼ばずに手元で見積もる。
-  // 見積もれない環境では undefined を返し、compact 済みの判定を諦めて compact する。
-  const estimateTokens = async (
-    $: EngineInterface,
-  ): Promise<number | undefined> => {
-    try {
-      const { context } = await $.session.usage({ breakdown: 'summary' });
-      return context.breakdown?.totalTokens;
-    } catch {
-      return undefined;
-    }
-  };
 
   on('session.start', async ($, e, next) => {
     // $.clock.now() は host を通るので、claude-code/testing の mock.clock で
