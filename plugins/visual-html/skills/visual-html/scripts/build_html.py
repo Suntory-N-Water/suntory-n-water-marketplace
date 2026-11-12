@@ -198,7 +198,12 @@ def render_flow(b, where):
                 else ""
             )
             marker = f'{icon_html}<span class="dads-step-navigation__state-label">{state_label}</span>'
-        period = f'<p class="dads-step-navigation__period">{esc(it["label"])}</p>' if it.get("label") else ""
+        label = str(it.get("label", "")).strip()
+        # 番号は丸の中に自動で出るため、label に番号だけを書くと同じ数字が 2 回並ぶ
+        if re.fullmatch(r"(step\s*|ステップ\s*)?\d+[.)]?", label, re.I):
+            warn(f"{where} flow[{n}]: label '{label}' は手順の番号と重なるため表示しません")
+            label = ""
+        period = f'<p class="dads-step-navigation__period">{inline(label)}</p>' if label else ""
         text = f'<p>{inline(it["text"])}</p>' if it.get("text") else ""
         description = f'<div class="dads-step-navigation__description">{period}{text}</div>' if (period or text) else ""
         steps.append(
@@ -443,7 +448,9 @@ def build(spec, base):
         head.append(f'<p class="eyebrow">{esc(spec["eyebrow"])}</p>')
     head.append(f"<h1>{esc(title)}</h1>")
     if spec.get("lead"):
-        head.append(f'<p class="lead">{inline(spec["lead"])}</p>')
+        # 要約は大きな文字で 2〜3 行に収まるため、文字単位で折り返すと「観察した／症状」のように修飾語と名詞が別の行に分かれて目立つ。dads.css の .lead で文字間の折り返しを止め、読点と句点の後だけで折り返す
+        lead = re.sub(r"([、。])", r"\1<wbr>", inline(spec["lead"]))
+        head.append(f'<p class="lead">{lead}</p>')
     pairs = [p for p in as_list(spec.get("meta_list")) if isinstance(p, (list, tuple)) and len(p) == 2]
     if pairs:
         dl = "".join(f"<div><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>" for k, v in pairs)
@@ -453,7 +460,7 @@ def build(spec, base):
     toc = ""
     if spec.get("toc", len(sections) >= 5):
         links = "".join(f'<li><a href="#{i}">{esc(s.get("heading", ""))}</a></li>' for i, s in zip(ids, sections))
-        toc = f'<nav class="toc" aria-labelledby="toc-title"><h2 id="toc-title">このページの目次</h2><ul>{links}</ul></nav>'
+        toc = f'<nav class="toc" aria-labelledby="toc-title"><h2 id="toc-title">このページの目次</h2><ol>{links}</ol></nav>'
 
     secs = []
     for n, (sid, s) in enumerate(zip(ids, sections), 1):

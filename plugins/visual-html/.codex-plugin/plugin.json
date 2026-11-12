@@ -1,6 +1,6 @@
 {
   "name": "visual-html",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "会話、Markdown、仕様書、調査メモ、比較表をデジタル庁デザインシステムに沿った図解つきの単一 HTML にして、ブラウザで開く",
   "author": {
     "name": "Suntory-N-Water"

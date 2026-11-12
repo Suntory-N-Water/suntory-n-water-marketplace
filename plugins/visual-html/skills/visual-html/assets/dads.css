@@ -134,7 +134,20 @@ h1 {
   font-weight: 700;
   letter-spacing: 0.01em;
 }
+/* 和文は既定だと文字単位で折り返し、「観察した／症状」のように語の途中で改行される。auto-phrase は文節の境目で折り返す(Chrome 119 以降。未対応のブラウザは従来どおり文字単位) */
+h1,
+h2,
+h3,
+.card__value,
+.banner h3,
+.dads-step-navigation__title {
+  word-break: auto-phrase;
+  text-wrap: pretty;
+}
+/* build_html.py が読点と句点の後に <wbr> を入れる。読点のない長い節は overflow-wrap で文字単位に戻る */
 .lead {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   margin: 0;
   max-width: 46em;
   font-size: 1.0625rem;
@@ -158,30 +171,51 @@ h1 {
   margin: 0 0 0 8px;
 }
 
+/* 縦 1 列の枠だと、セクションが多いとき右側が空いたまま縦に長くなる。本文幅いっぱいに段組みし、読む順が上から下になるよう grid ではなく columns を使う */
 .toc {
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 0 48px;
-  padding: 12px 24px 24px 20px;
-  border: 1px solid var(--color-neutral-solid-gray-420);
+  margin: 0 0 56px;
+  padding: 20px 24px 24px;
+  border-radius: var(--border-radius-8);
+  background: var(--color-neutral-solid-gray-50);
 }
 .toc h2 {
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   padding: 0;
   border: 0;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.7;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-neutral-solid-gray-700);
 }
-.toc ul {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.toc ol {
+  columns: 3 14em;
+  column-gap: 32px;
   margin: 0;
-  padding-left: 1.5em;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+.toc li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  break-inside: avoid;
+  padding: 4px 0;
+  counter-increment: toc;
+  line-height: 1.5;
+}
+.toc li::before {
+  content: counter(toc, decimal-leading-zero);
+  flex: none;
+  min-width: 1.5em;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primitive-blue-900);
 }
 .toc a {
   color: inherit;
+  text-decoration-color: var(--color-neutral-solid-gray-420);
 }
 
 section {

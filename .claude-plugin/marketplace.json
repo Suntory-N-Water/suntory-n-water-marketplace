@@ -49,7 +49,7 @@
     {
       "name": "visual-html",
       "description": "会話、Markdown、仕様書、調査メモ、比較表をデジタル庁デザインシステムに沿った図解つきの単一 HTML にして、ブラウザで開く",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Suntory-N-Water"
       },

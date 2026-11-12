@@ -101,6 +101,8 @@ agent-browser screenshot --full ~/.cache/visual-html/{slug}.png
 | 入力Markdownの原文 | `raw_markdown`(`path`) |
 | 上のどれでも表せない構成図 | `figure`(`html` にinline SVG、`title` `caption`) |
 
+`flow` の手順の番号は、スクリプトが丸の中に自動で振る。`label` は期間、日付、設定値のような番号以外の短い見出しにだけ使い、`"1"` や `"Step 2"` のような番号は書かない(書いても番号と重なるため表示されず、`warning:` が出る)。
+
 `flow` の `state` は `completed`(完了)、`reached`(到達済み)、`editing`(編集中)、`error`(エラー)、`skipped`(スキップ)のいずれかで、番号の下に文字でも表示される。進捗のない単なる手順には付けない。
 
 表のセルなど文字列の中にラベルを置くときは `[[kind|文字]]` と書く(`kind` は `success` `info` `warning` `error` `gray`)。`gray` は「未着手」「対象外」のように良し悪しを伴わない状態に使う。`cards` の `tag.kind` と `resources` の `tag.kind` も同じ値を取る。
